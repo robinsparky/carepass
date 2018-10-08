@@ -62,7 +62,7 @@ class CourseSession {
 	public function __construct() {
 		$loc = __CLASS__ . '::' . __FUNCTION__;
 
-		$this->hooks = array('post-new.php');
+		$this->hooks = array( 'post.php', 'post-new.php' );
 		$this->roles = array();
 		$this->log = new BaseLogger( true );
 	}

@@ -18,6 +18,12 @@ class CourseSession {
 	//Field names of data posted to/from server
 	const COURSE_SESSION_ID = 'care_course_session_courseid';
 	const COURSE_SESSION_NAME = 'care_course_session_name';
+
+	//Id of the select element
+	const COURSE_SELECT_ID = 'care_course_selector';
+
+	//Name of local js object
+	const JS_OBJECT = 'care_course_session';
 	
 	private $hooks;
 	private $roles;
@@ -56,9 +62,9 @@ class CourseSession {
 	public function __construct() {
 		$loc = __CLASS__ . '::' . __FUNCTION__;
 
-		$this->hooks = array();
+		$this->hooks = array('post-new.php');
 		$this->roles = array();
-		$this->log = new BaseLogger( false );
+		$this->log = new BaseLogger( true );
 	}
 
 	public function register() {
@@ -97,6 +103,26 @@ class CourseSession {
 
 		add_filter('em_content_events_args', array( $this, 'filterEventArgs'), 1, 1 );
 		
+	}
+	
+	/**
+	 * Enqueue any needed JS files
+	 */
+	public function enqueue( $hook ) {
+        $loc = __CLASS__ . '::' . __FUNCTION__;
+        $this->log->error_log( "$loc --> $hook" ); 
+
+        //Make sure we are rendering the "user-edit" page
+        if( in_array( $hook, $this->hooks ) ) {
+
+            wp_register_script( 'care-course-event'
+                            , get_stylesheet_directory_uri() . '/js/care-course-event.js'
+                            , array('jquery') );
+    
+            wp_localize_script( 'care-course-event', self::JS_OBJECT, $this->get_data() );
+
+            wp_enqueue_script( 'care-course-event' );
+		}
 	}
 
 	public function filterEventArgs( $args ) {
@@ -204,28 +230,7 @@ class CourseSession {
 		}
     	return $replace;
 	}
-	
-	/**
-	 * Enqueue any needed JS files
-	 */
-	public function enqueue( $hook ) {
-        $loc = __CLASS__ . '::' . __FUNCTION__;
-        $this->log->error_log( "$loc --> $hook" ); 
 
-        //Make sure we are rendering the "user-edit" page
-        if( in_array( $hook, $this->hooks ) ) {
-            //Enqueue WP media js
-            //wp_enqueue_media();
-
-            // wp_register_script( 'care-media-uploader'
-            //                 , get_stylesheet_directory_uri() . '/js/care-course-media-uploader.js'
-            //                 , array('jquery') );
-    
-            // wp_localize_script( 'care-media-uploader', self::JS_OBJECT, $this->get_data() );
-
-            // wp_enqueue_script( 'care-media-uploader' );
-		}
-	}
 
 	/**
 	 * Retrieve the parent course id and title if it exists
@@ -300,8 +305,8 @@ class CourseSession {
 		$this->log->error_log("$loc --> actual='{$EM_Event->course_Id}'");
 
 		//Now echo the html desired
-		$sel = sprintf('<select name="%s">', self::COURSE_SESSION_ID );
-		echo $sel; //'<select name="care_course_session_field">';
+		$sel = sprintf('<select id="%s" name="%s">', self::COURSE_SELECT_ID, self::COURSE_SESSION_ID );
+		echo $sel;
 		$courses = Course::getCourseDefinitions();
 		$sel = '';
 		$options = array();
@@ -397,6 +402,17 @@ class CourseSession {
 			}
 		}
 		return $result;
+	}
+	
+	private function get_data() {
+		$loc = __CLASS__ . '::' . __FUNCTION__;
+        $this->log->error_log( $loc );
+
+        $mess = "Greetings from Course Session!";
+        // if( isset( $_SESSION['coursereportmessage'] ) ) $mess = $_SESSION['coursereportmessage'] ;
+        return array( 'selectId' => self::COURSE_SELECT_ID
+                    , 'message' => $mess
+                   );
 	}
 
 } //end class

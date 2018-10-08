@@ -33,7 +33,7 @@ function care_admin_page() {
 
     //Generate admin sub pages
     add_submenu_page( 'carepass' //parent slug
-                    , 'Care Admin Options' //page title
+                    , 'PASS Admin Options' //page title
                     , 'Settings' // menu title
                     , 'manage_options' //capabilities
                     , 'carepass' // menu slug
@@ -42,7 +42,7 @@ function care_admin_page() {
     
     //Generate admin sub pages -- first one must mirror the main menu page
     add_submenu_page( 'carepass' //parent slug
-                    , 'Care Dashboard Options' //page title
+                    , 'PASS Dashboard Options' //page title
                     , 'Dashboard' // menu title
                     , 'manage_options' //capabilities
                     , 'carepass_dashboard' // menu slug
@@ -71,7 +71,7 @@ function care_custom_settings() {
                     //, '' //sanitize call back
                     );
     register_setting( 'care-settings-group' //Options group
-                    , 'care_posts_page_size' //Option name
+                    , 'care_courses_page_size' //Option name
                     , 'sanitize_page_size' //sanitize call back
                     );
 
@@ -91,12 +91,12 @@ function care_custom_settings() {
                 
     add_settings_section( 'care-display-options' //id
                         , 'Display Options' //title
-                        , 'care_posts_page_size_option' //callback to generate html
+                        , 'care_courses_page_size_option' //callback to generate html
                         , 'carepass' //page
                     );
     add_settings_field( 'posts-per-page' // id
-                      , 'Posts Per Page' // title
-                      , 'posts_per_page' // callback
+                      , 'Courses Per Page' // title
+                      , 'courses_per_page' // callback
                       , 'carepass' // page
                       , 'care-display-options' // section
                       //,  array of args
@@ -106,7 +106,7 @@ function care_custom_settings() {
 function care_course_options() {
     echo "Manage your Course Options";
 }
-function care_posts_page_size_option() {
+function care_courses_page_size_option() {
     echo "Manage your Display Options";
 }
 
@@ -115,7 +115,7 @@ function courses_password() {
     echo '<input type="text" name="care_courses_password" value="' . $pass . '" />';
 }
 
-function posts_per_page() {
+function courses_per_page() {
     $pagesize = esc_attr( get_option('care_posts_page_size') );
     echo '<input type="text" name="care_posts_page_size" value="' . $pagesize . '" /><p>Max 1000 and not negative</p>';
 }

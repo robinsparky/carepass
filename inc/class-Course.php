@@ -12,35 +12,125 @@
 class Course extends BaseCustomMediaPostType {
 	
 	const CUSTOM_POST_TYPE = 'carecourse';
+	const CUSTOM_POST_TYPE_TAX = 'coursecategory';
+	const CUSTOM_POST_TYPE_TAG = 'coursetag';
 
 	const VIDEO_META_KEY      = '_care_course_video_key';
 	const PRICE_META_KEY      = '_care_course_price_key';
 	const CURRICULUM_META_KEY = '_care_course_curriculum_key';
-	const DURATION_META_KEY   = '_care_xourse_duration_key';
+	const DURATION_META_KEY   = '_care_course_duration_key';
+	const NEEDS_APPROVAL_META_KEY = '_care_course_needs_approval_key';
 
 	const JS_OBJECT = 'care_course_media_obj';
 
-	static public $AllCourses = array();
+	static private $AllCourses = array();
 	
     //Only emit on this page
 	private $hooks = array('post.php', 'post-new.php');
 	private $curriculum;
+	private $needsApproval;
 
 	private $log;
 
-	//Retrieve Care Courses from db
+	
+	/**
+	 * Retrieve All Care Courses and meta data from db
+	 * @param $force Boolean to force fresh retrieval from database
+	 */
 	static public function getCourseDefinitions( $force = false ) {
 		$loc = __CLASS__ . '::' . __FUNCTION__;
 
+		$map = array( self::PRICE_META_KEY => 'price'
+					, self::NEEDS_APPROVAL_META_KEY => 'needsapproval'
+					, self::DURATION_META_KEY => 'duration'
+					, self::VIDEO_META_KEY => 'video'
+					, self::CURRICULUM_META_KEY => 'curriculum'
+				);
+
 		global $wpdb;
 		if( $force || count( self::$AllCourses ) < 1 ) {
-			self::$AllCourses = $wpdb->get_results( "select `ID` as id, `post_title` as name "
-												  . "from `wp_posts` "
-												  . "where `post_type` = '" . self::CUSTOM_POST_TYPE . "'; "
-												  , ARRAY_A );
+			$sql = "SELECT p.ID as id, p.post_title as name, pm.meta_key as 'key', pm.meta_value as val
+					FROM {$wpdb->prefix}postmeta pm
+					inner join {$wpdb->prefix}posts p on p.ID = pm.post_id
+					where p.post_type = '%s';";
+			$query = $wpdb->prepare( $sql, self::CUSTOM_POST_TYPE );
+			$result = $wpdb->get_results( $query, ARRAY_A );
+
+			$retval = array();
+			$ids = array();
+			foreach( $result as $row ) {
+				// error_log("$loc-->row:");
+				// error_log( print_r($row, true ) );
+				if( in_array( $row['id'], $ids ) ) {
+					foreach( $retval as &$c ) {
+						if( $row['id'] ===  $c['id'] ) {
+							if( array_key_exists($row['key'], $map ) ) {
+								$c[$map[$row['key']]] = $row['val'];
+							}
+						}
+					}
+				}
+				else {
+					array_push( $ids, $row['id'] );
+					$course = array();
+					$course['id'] = $row['id'];
+					$course['name'] = $row['name'];
+					if( array_key_exists($row['key'], $map ) ){
+						$course[$map[$row['key']]] = $row['val'];
+					}
+					array_push( $retval, $course );
+				}
+				// error_log("$loc-->retval:");
+				// error_log( print_r( $retval, true ) );
+			}
+			self::$AllCourses = $retval;
 		}
-		
+
 		return self::$AllCourses;
+	}
+
+	/**
+	 * Retrive the price for a course
+	 * @param $courseId The ID of the care course
+	 * @return The price of the specified course
+	 */
+	static public function getCoursePrice( $courseId ) {
+
+		global $wpdp;
+
+		$sql = "SELECT pm.meta_value as price 
+				FROM {$wpdb->prefix}postmeta pm 
+				inner join {$wpdb->prefix}posts p on p.ID = pm.post_id 
+				where p.post_type = '%s' 
+				and pm.meta_key = '%s'
+				and pm.post_id = %d;";
+
+		$query = $wpdb->prepare($sql, self::CUSTOM_POST_TYPE, self::PRICE_META_KEY, $courseId );
+		$result = $wpdb->get_var( $query );
+		if( !is_numeric( $result ) ) $result = 0.00;
+		return $result;
+	}
+
+	/**
+	 * Retrive the 'needs approval' field for a course
+	 * @param $courseId The ID of the care course
+	 * @return String with a value of 'yes' or 'no'
+	 */
+	static public function getCourseNeedsApproval( $courseId ) {
+
+		global $wpdp;
+
+		$sql = "SELECT pm.meta_value as price 
+				FROM {$wpdb->prefix}postmeta pm 
+				inner join {$wpdb->prefix}posts p on p.ID = pm.post_id 
+				where p.post_type = '%s' 
+				and pm.meta_key = '%s'
+				and pm.post_id = %d;";
+
+		$query = $wpdb->prepare($sql, self::CUSTOM_POST_TYPE, self::NEEDS_APPROVAL_META_KEY, $courseId );
+		$result = $wpdb->get_var( $query );
+		if( $result !== 'yes' ) $result = 'no';
+		return $result;
 	}
 
 	public function __construct() {
@@ -49,6 +139,7 @@ class Course extends BaseCustomMediaPostType {
 
 		$this->mediaMetaBoxId = 'care_course_video_meta_box';
 		$this->curriculum = array( 'recommended' =>'Recommended', 'essential' => 'Essential' );
+		$this->needsApproval = array('no' => 'No', 'yes' => 'Yes');
 	}
 
 	public function register() {
@@ -70,6 +161,7 @@ class Course extends BaseCustomMediaPostType {
 		add_action( 'save_post', array( $this, 'videoSave') );
 		add_action( 'save_post', array( $this, 'priceSave') );
 		add_action( 'save_post', array( $this, 'durationSave') );
+		add_action( 'save_post', array( $this, 'approvalSave') );
 
 	}
 	
@@ -96,19 +188,19 @@ class Course extends BaseCustomMediaPostType {
 		$loc = __CLASS__ . '::' . __FUNCTION__;
 		$this->log->error_log( $loc );
 
-		$labels = array( 'name' => 'Care Courses'
-					   , 'singular_name' => 'Care Course'
-					   , 'add_new' => 'Add Care Course'
-					   , 'add_new_item' => 'New Care Course'
-					   , 'new_item' => 'New Care Course'
-					   , 'edit_item' => 'Edit Care Course'
-					   , 'view_item' => 'View Care Course'
-					   , 'all_items' => 'All Care Courses'
-					   , 'menu_name' => 'Care Courses'
-					   , 'search_items'=>'Search Care Courses'
-					   , 'not_found' => 'No Care Courses found'
-					   , 'not_found_in_trash'=> 'No Care Courses found in Trash'
-					   , 'parent_item_colon' => 'Parent Care Course:' );
+		$labels = array( 'name' => 'PASS Courses'
+					   , 'singular_name' => 'PASS Course'
+					   , 'add_new' => 'Add PASS Course'
+					   , 'add_new_item' => 'New PASS Course'
+					   , 'new_item' => 'New PASS Course'
+					   , 'edit_item' => 'Edit PASS Course'
+					   , 'view_item' => 'View PASS Course'
+					   , 'all_items' => 'All PASS Courses'
+					   , 'menu_name' => 'PASS Courses'
+					   , 'search_items'=>'Search PASS Courses'
+					   , 'not_found' => 'No PASS Courses found'
+					   , 'not_found_in_trash'=> 'No PASS Courses found in Trash'
+					   , 'parent_item_colon' => 'Parent PASS Course:' );
 		$args = array( 'labels' => $labels
 					 //, 'taxonomies' => array( 'category', 'post_tag' )
 					 , 'menu_position' => 6
@@ -136,6 +228,7 @@ class Course extends BaseCustomMediaPostType {
 		$newColumns['title'] = __('Title', CARE_TEXTDOMAIN );
 		$newColumns['taxonomy-coursecategory'] = __('Category', CARE_TEXTDOMAIN );
 		$newColumns['course_price'] = __('Price', CARE_TEXTDOMAIN );
+		$newColumns['course_approval'] = __('Needs Approval', CARE_TEXTDOMAIN );
 		$newColumns['course_duration'] = __('Duration', CARE_TEXTDOMAIN );
 		$newColumns['course_curriculum'] = __( 'Curriculum', CARE_TEXTDOMAIN );
 		$newColumns['course_video'] = __( 'Video', CARE_TEXTDOMAIN  );
@@ -150,10 +243,12 @@ class Course extends BaseCustomMediaPostType {
 	}
 
 	public function orderby ( $query ) {
+        $loc = __CLASS__ . '::' . __FUNCTION__;
+		$this->log->error_log( $loc );
 
 		if( ! is_admin() || ! $query->is_main_query() ) {
 			return;
-		  }
+		}
 		  
 		if ( 'priceOfCourse' === $query->get( 'orderby') ) {
 			$query->set( 'orderby', 'meta_value' );
@@ -196,6 +291,16 @@ class Course extends BaseCustomMediaPostType {
 
 			echo number_format( $duration, 0 ) . ' hours';
 		}
+		elseif( $column_name = 'course_approval' ) {
+			$needsApproval = get_post_meta( $postID, self::NEEDS_APPROVAL_META_KEY, TRUE );
+			$result = 'No';
+			foreach( $this->needsApproval as $value => $name ) {
+				if( $needsApproval === $value ) {
+					$result = $name;
+				}
+			}
+			echo $result;
+		}
 
 	}
 
@@ -204,34 +309,38 @@ class Course extends BaseCustomMediaPostType {
 		$this->log->error_log( $loc );
 		
 			//hierarchical
-		$labels = array( 'name' => 'Course Categories'
-						, 'singular_name' => 'Course Category'
+		$labels = array( 'name' => 'PASS Course Categories'
+						, 'singular_name' => 'PASS Course Category'
 						, 'search_items' => 'Search Course Category'
-						, 'all_items' => 'All Course Categories'
-						, 'parent_item' => 'Parent Course Category'
-						, 'parent_item_colon' => 'Parent Course Category:'
-						, 'edit_item' => 'Edit Course Category'
-						, 'update_item' => 'Update Course Category'
-						, 'add_new_item' => 'Add New Course Category'
-						, 'new_item_name' => 'New Course Category'
-						, 'menu_name' => 'Course Categories'
-		);
+						, 'all_items' => 'All PASS Course Categories'
+						, 'parent_item' => 'Parent PASS Course Category'
+						, 'parent_item_colon' => 'Parent PASS Course Category:'
+						, 'edit_item' => 'Edit PASS Course Category'
+						, 'update_item' => 'Update PASS Course Category'
+						, 'add_new_item' => 'Add New PASS Course Category'
+						, 'new_item_name' => 'New PASS Course Category'
+						, 'menu_name' => 'PASS Course Categories'
+						);
 
 		$args = array( 'hierarchical' => true
-					, 'labels' => $labels
-					, 'show_ui' => true
-					, 'show_admin_column' => true
-					, 'query_var' => true
-					, 'rewrite' => array( 'slug' => 'coursecategory' )
-		);
+					 , 'labels' => $labels
+					 , 'show_ui' => true
+					 , 'show_admin_column' => true
+					 , 'query_var' => true
+					 , 'rewrite' => array( 'slug' => self::CUSTOM_POST_TYPE_TAX )
+					);
 
-		register_taxonomy( 'coursecategory', array( self::CUSTOM_POST_TYPE ), $args );
+		register_taxonomy( self::CUSTOM_POST_TYPE_TAX
+						 , array( self::CUSTOM_POST_TYPE )
+						 , $args );
 
 		//NOT hierarchical
-		register_taxonomy( 'coursetag', self::CUSTOM_POST_TYPE, array( 'label' => 'Course Tags'
-															         , 'rewrite' => array( 'slug' => 'coursetag' )
-															         , 'hierarchical' => false
-		));
+		register_taxonomy( self::CUSTOM_POST_TYPE_TAG
+						 , self::CUSTOM_POST_TYPE
+						 , array( 'label' => 'PASS Course Tags'
+								, 'rewrite' => array( 'slug' => 'coursetag' )
+								, 'hierarchical' => false
+						));
 	}
 		
 	/* 
@@ -273,13 +382,22 @@ class Course extends BaseCustomMediaPostType {
 				);
 				
 		add_meta_box( 'care_course_duration_meta_box'
-		, 'Duration' //Title
-		, array( $this, 'durationCallBack' ) //Callback
-		, self::CUSTOM_POST_TYPE //mixed: screen cpt name or ???
-		, 'normal' //context: normal, side
-		, 'high' // priority: low, high, default
-		// array callback args
-	);
+					, 'Duration' //Title
+					, array( $this, 'durationCallBack' ) //Callback
+					, self::CUSTOM_POST_TYPE //mixed: screen cpt name or ???
+					, 'normal' //context: normal, side
+					, 'high' // priority: low, high, default
+					// array callback args
+				);
+
+		add_meta_box( 'care_course_needs_approval_meta_box'
+					, 'Needs Approval' //Title
+					, array( $this, 'approvalCallBack' ) //Callback
+					, self::CUSTOM_POST_TYPE //mixed: screen cpt name or ???
+					, 'normal' //context: normal, side
+					, 'high' // priority: low, high, default
+					// array callback args
+				);
 
 	}
 	
@@ -294,8 +412,6 @@ class Course extends BaseCustomMediaPostType {
 		$this->log->error_log("$loc --> actual='$actual'");
 
 		//Now echo the html desired
-		$this->log->error_log("Curriculum options:");
-		$this->log->error_log( print_r($this->curriculum, true ) );
 		echo'<select name="care_course_curriculum_field">';
 		foreach( $this->curriculum as $key => $val ) {
 			$disp = esc_attr($val);
@@ -460,7 +576,6 @@ class Course extends BaseCustomMediaPostType {
 		update_post_meta( $post_id, self::PRICE_META_KEY, $price );
 	}
 	
-	
 	public function durationCallBack( $post ) {
         $loc = __CLASS__ . '::' . __FUNCTION__;
 		$this->log->error_log($loc);
@@ -516,6 +631,76 @@ class Course extends BaseCustomMediaPostType {
 		$this->log->error_log("$loc --> duration='$duration'");
 		update_post_meta( $post_id, self::DURATION_META_KEY, $duration );
 	}
+
+	
+	public function approvalCallBack( $post ) {
+        $loc = __CLASS__ . '::' . __FUNCTION__;
+		$this->log->error_log($loc);
+
+		wp_nonce_field( 'needsApprovalSave' //action
+					  , 'care_needs_approval_nonce');
+
+		$actual = get_post_meta( $post->ID, self::NEEDS_APPROVAL_META_KEY, true );
+		if( !@$actual ) $actual = 'no';
+		$this->log->error_log("$loc --> actual=$actual");
+
+		//Now echo the html desired
+		$markup = '';
+		foreach( $this->needsApproval as $value => $name ) {
+			if( $actual === $value ) {
+				$markup .= sprintf( '&nbsp;<input type="radio" name="care_course_need_approval" value="%s" checked>%s'
+								  , $value, $name);
+			}
+			else {
+				$markup .= sprintf( '&nbsp;<input type="radio" name="care_course_need_approval" value="%s">%s'
+								  , $value, $name);
+				}
+			}
+		
+		echo $markup;
+	}
+	
+	public function approvalSave( $post_id ) {
+        $loc = __CLASS__ . '::' . __FUNCTION__;
+		$this->log->error_log($loc);
+
+		if( ! isset( $_POST['care_needs_approval_nonce'] ) ) {
+			$this->log->error_log("$loc --> no nonce");
+			return;
+		}
+
+		if( ! wp_verify_nonce( $_POST['care_needs_approval_nonce'] , 'needsApprovalSave'  )) {
+			$this->log->error_log("$loc --> bad nonce");
+			return;
+		}
+
+		if( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+			$this->log->error_log("$loc --> doing autosave");
+			return;
+		}
+
+		if( ! current_user_can( 'edit_post', $post_id ) ) {
+			$this->log->error_log("$loc --> cannot edit post");
+			return;
+		}
+
+		$needsApproval = 'no';
+		if( ! isset( $_POST['care_course_need_approval'] ) ) {
+			$this->log->error_log("$loc --> no approval field");
+			return;
+		}
+		else {
+			$needsApproval = $_POST['care_course_need_approval'];
+		}
+
+		if( empty( $needsApproval ) ) $needsApproval = 'no';
+		if( ! in_array( $needsApproval , array_keys($this->needsApproval ) ) ) {
+			$needsApproval = 'no';
+		}
+		$this->log->error_log("$loc --> duration='$needsApproval'");
+		update_post_meta( $post_id, self::NEEDS_APPROVAL_META_KEY, $needsApproval );
+	}
+
 } //end class
 
 if( class_exists('Course') ) {

@@ -2,7 +2,7 @@
 <?php settings_errors(); ?>
 <form method="post" action="options.php">
     <?php settings_fields('care-settings-group'); ?>
-    <?php do_settings_sections('caremci'); ?>
+    <?php do_settings_sections('carepass'); ?>
     <?php submit_button(
         //  '' // some text
         // ,'' // type

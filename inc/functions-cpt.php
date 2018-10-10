@@ -3,12 +3,12 @@
  * Register custom post types
  */
 require get_stylesheet_directory() . '/inc/class-Webinar.php';
-require get_stylesheet_directory() . '/inc/class-Course.php';
+//require get_stylesheet_directory() . '/inc/class-Course.php';
 
 /**
  * Register classes for Event-Course interoperation
  */
-require get_stylesheet_directory() . '/inc/class-CourseSession.php';
+//require get_stylesheet_directory() . '/inc/class-CourseSession.php';
 //require get_stylesheet_directory() . '/inc/class-CourseRegisterByEmail.php';
 require get_stylesheet_directory() . '/inc/class-CourseRegisterByEvent.php';
 

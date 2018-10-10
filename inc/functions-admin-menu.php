@@ -71,13 +71,13 @@ function care_custom_settings() {
                     //, '' //sanitize call back
                     );
     register_setting( 'care-settings-group' //Options group
-                    , 'care_courses_page_size' //Option name
+                    , 'care_webinars_page_size' //Option name
                     , 'sanitize_page_size' //sanitize call back
                     );
 
     add_settings_section( 'care-course-options' //id
-                        , 'Course Options' //title
-                        , 'care_course_options' //callback to generate html
+                        , 'Webinar Options' //title
+                        , 'care_webinar_options' //callback to generate html
                         , 'carepass' //page
                     );
     
@@ -91,22 +91,22 @@ function care_custom_settings() {
                 
     add_settings_section( 'care-display-options' //id
                         , 'Display Options' //title
-                        , 'care_courses_page_size_option' //callback to generate html
+                        , 'care_webinars_page_size_option' //callback to generate html
                         , 'carepass' //page
                     );
     add_settings_field( 'posts-per-page' // id
-                      , 'Courses Per Page' // title
-                      , 'courses_per_page' // callback
+                      , 'Webinars Per Page' // title
+                      , 'webinars_per_page' // callback
                       , 'carepass' // page
                       , 'care-display-options' // section
                       //,  array of args
                 );
 }
 
-function care_course_options() {
-    echo "Manage your Course Options";
+function care_webinar_options() {
+    echo "Manage your Webinar Options";
 }
-function care_courses_page_size_option() {
+function care_webinars_page_size_option() {
     echo "Manage your Display Options";
 }
 
@@ -115,9 +115,9 @@ function courses_password() {
     echo '<input type="text" name="care_courses_password" value="' . $pass . '" />';
 }
 
-function courses_per_page() {
-    $pagesize = esc_attr( get_option('care_posts_page_size') );
-    echo '<input type="text" name="care_posts_page_size" value="' . $pagesize . '" /><p>Max 1000 and not negative</p>';
+function webinars_per_page() {
+    $pagesize = esc_attr( get_option('care_webinars_page_size') );
+    echo '<input type="text" name="care_webinars_page_size" value="' . $pagesize . '" /><p>Max 1000 and not negative</p>';
 }
 
 function sanitize_page_size( $input ) {

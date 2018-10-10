@@ -25,6 +25,9 @@ class CourseSession {
 	//Name of local js object
 	const JS_OBJECT = 'care_course_session';
 	
+	const LB = "[";
+	const RB = "]";
+	
 	private $hooks;
 	private $roles;
 
@@ -62,7 +65,7 @@ class CourseSession {
 	public function __construct() {
 		$loc = __CLASS__ . '::' . __FUNCTION__;
 
-		$this->hooks = array( 'post.php', 'post-new.php' );
+		$this->hooks = array('post.php', 'post-new.php');
 		$this->roles = array();
 		$this->log = new BaseLogger( true );
 	}
@@ -307,18 +310,35 @@ class CourseSession {
 		//Now echo the html desired
 		$sel = sprintf('<select id="%s" name="%s">', self::COURSE_SELECT_ID, self::COURSE_SESSION_ID );
 		echo $sel;
-		$courses = Course::getCourseDefinitions();
+		$courses = Course::getCourseDefinitions( true 	);
 		$sel = '';
 		$options = array();
 		foreach( $courses as $course ) {
-			$disp = esc_attr( $course['name'] );
+			//$disp = esc_attr( $course['name'] );
+			$approval = 'yes' === $course['needsapproval'] ? __("; Use password protection", CARE_TEXTDOMAIN ) : "";
+			$disp = sprintf("%s %s$%d%s%s", $course['name'], self::LB, $course['price'], $approval, self::RB );
 			$value = esc_attr( $course['id'] );
+			$price = isset( $course['price'] ) ?  $course['price'] : 0;
+			$duration = isset( $course['duration'] ) ? $course['duration'] : 0 ;
+			$needsApproval = isset( $course['needsapproval'] ) ? $course['needsapproval'] : __('no', CARE_TEXTDOMAIN);
+			$title = $course['name'];
 			if($EM_Event->course_Id === $value) {
 				$sel = 'selected';
-				$options[] = "<option value='$value' selected='$sel'>$disp</option>";
+				$options[] = "<option value='$value' 
+									data-price='$price' 
+									data-duration='$duration' 
+									data-needsapproval='$needsApproval' 
+									data-title = '$title'
+									selected='$sel'>
+								$disp</option>";
 			}
 			else {
-				$options[] = "<option value='$value'>$disp</option>";
+				$options[] = "<option value='$value'
+								data-price='$price' 
+								data-duration='$duration' 
+								data-needsapproval='$needsApproval' 
+								data-title = '$title'>
+				              $disp</option>";
 			}
 		}
 		$mess = __( 'Select Course/Workshop or This to Remove', CARE_TEXTDOMAIN );

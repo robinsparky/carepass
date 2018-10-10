@@ -15,15 +15,16 @@
 				console.log("window.careMessageHandler does not exist!");
 			}
 			
-            console.log( selectId + " fired!");
-            course = e.target.options[e.target.selectedIndex].text;
-			console.log("Setting title to: " + course );
-			if( course.includes('Remove') ) {
+			console.log( selectId + " fired!");
+			console.log( 'selected index=' + e.target.selectedIndex );
+			if( e.target.selectedIndex === 0 ) {
 				$("div#titlewrap input#title").val('').focus();
 			}
-			else {
-				//$("div#titlewrap input#title").attr("placeholder", "").val("").focus().blur();
-				$("div#titlewrap input#title").val(course).focus();
+			else {	
+				course = e.target.options[e.target.selectedIndex];
+				title = course.dataset.title;
+				console.log("Setting title to: " + title );
+				$("div#titlewrap input#title").val(title).focus();
 			}
 
 			return false;

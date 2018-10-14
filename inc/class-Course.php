@@ -52,7 +52,8 @@ class Course extends BaseCustomMediaPostType {
 			$sql = "SELECT p.ID as id, p.post_title as name, pm.meta_key as 'key', pm.meta_value as val
 					FROM {$wpdb->prefix}postmeta pm
 					inner join {$wpdb->prefix}posts p on p.ID = pm.post_id
-					where p.post_type = '%s';";
+					where p.post_type = '%s' 
+					order by p.post_title;";
 			$query = $wpdb->prepare( $sql, self::CUSTOM_POST_TYPE );
 			$result = $wpdb->get_results( $query, ARRAY_A );
 
@@ -190,14 +191,14 @@ class Course extends BaseCustomMediaPostType {
 
 		$labels = array( 'name' => 'PASS Courses'
 					   , 'singular_name' => 'PASS Course'
-					   , 'add_new' => 'Add PASS Course'
-					   , 'add_new_item' => 'New PASS Course'
-					   , 'new_item' => 'New PASS Course'
-					   , 'edit_item' => 'Edit PASS Course'
-					   , 'view_item' => 'View PASS Course'
-					   , 'all_items' => 'All PASS Courses'
+					   , 'add_new' => 'Add Course'
+					   , 'add_new_item' => 'New Course'
+					   , 'new_item' => 'New Course'
+					   , 'edit_item' => 'Edit Course'
+					   , 'view_item' => 'View Course'
+					   , 'all_items' => 'All Courses'
 					   , 'menu_name' => 'PASS Courses'
-					   , 'search_items'=>'Search PASS Courses'
+					   , 'search_items'=>'Search Courses'
 					   , 'not_found' => 'No PASS Courses found'
 					   , 'not_found_in_trash'=> 'No PASS Courses found in Trash'
 					   , 'parent_item_colon' => 'Parent PASS Course:' );

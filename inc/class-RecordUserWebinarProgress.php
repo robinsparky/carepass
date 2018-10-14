@@ -5,30 +5,29 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /** 
- * Data and functions for Recording Course Progress
- * @class  RecordUserCourseProgress
+ * Data and functions for Recording Webinar Progress
+ * @class  RecordUserWebinarProgress
  * @package Care
  * @version 1.0.0
  * @since   0.1.0
 */
-class RecordUserCourseProgress
+class RecordUserWebinarProgress
 { 
 
     //Action hook used by the AJAX class.
-    const ACTION     = 'recordCourseProgess';
+    const ACTION     = 'recordWebinarProgess';
 
-    const NONCE      = 'recordCourseProgess';
-    const META_KEY   = "course_status";
+    const NONCE      = 'recordWebinarProgess';
+    const META_KEY   = "webinar_status";
 
     //Course registration workflow
     const COMPLETED  = "Completed";
     const PENDING    = "In Progress";
     const REGISTERED = "Registered";
 
-    const TABLE_CLASS = 'course-status';
+    const TABLE_CLASS = 'webinar-status';
 
-    const SESSION_MESSAGE_KEY = 'coursereportmessage';
-    const SEP = '|';
+    const SESSION_MESSAGE_KEY = 'webinarreportmessage';
 
     private $ajax_nonce = null;
     private $errobj = null;
@@ -39,16 +38,15 @@ class RecordUserCourseProgress
     private $roles;
     private $log;
     /**
-     * Register class with all the appropriate WordPress hooks.
+     * Register the AJAX handler class with all the appropriate WordPress hooks.
      */
     public static function register() {
         $loc = __CLASS__ . '::' . __FUNCTION__;
         error_log("$loc");
         $handler = new self();
         add_action('admin_enqueue_scripts', array( $handler, 'registerAdminScript' ) );
-        
         $handler->registerHandlers();
-
+        
         //TODO: Remove session after code is debugged
         if(session_id() == '') {
             session_start();
@@ -60,8 +58,9 @@ class RecordUserCourseProgress
 	/*************** Instance Methods ****************/
 	public function __construct( ) {
         $this->errobj = new WP_Error();
+        //Only emit on this page
         $this->hooks = array( 'profile.php', 'user-edit.php' );
-        $this->roles = array('um_member');
+        $this->roles = array( 'um_member' );
         $this->statuses = array( self::PENDING, self::COMPLETED );
 
         $this->log = new BaseLogger( true );
@@ -79,13 +78,13 @@ class RecordUserCourseProgress
 
         //Make sure we are rendering the "user-edit" page
         if( in_array( $hook, $this->hooks ) ) {
-            wp_register_script( 'care-userprofile-courseprogress'
-                            , get_stylesheet_directory_uri() . '/js/care-record-user-course-status.js'
+            wp_register_script( 'care-userprofile-webinarprogress'
+                            , get_stylesheet_directory_uri() . '/js/care-record-user-webinar-status.js'
                             , array('jquery') );
     
-            wp_localize_script( 'care-userprofile-courseprogress', 'care_userprofile_course', $this->get_data() );
+            wp_localize_script( 'care-userprofile-webinarprogress', 'care_userprofile_webinar', $this->get_data() );
 
-            wp_enqueue_script( 'care-userprofile-courseprogress' );
+            wp_enqueue_script( 'care-userprofile-webinarprogress' );
         }
     }
 
@@ -94,9 +93,10 @@ class RecordUserCourseProgress
         $this->log->error_log("$loc");
 
         //Show the data
-        add_action( 'show_user_profile', array( $this, 'courseUserProfileFields' ), 10, 1  );
-        add_action( 'edit_user_profile', array( $this, 'courseUserProfileFields' ), 10, 1  );
-        add_action( 'user_new_form', array( $this, 'courseUserProfileFields' ) ); // creating a new user
+        add_action( 'show_user_profile', array( $this, 'webinarUserProfileFields' ), 10, 1  );
+        //add_action( 'profile_personal_options', array( $this, 'webinarUserProfileFields' ), 10, 1  );
+        add_action( 'edit_user_profile', array( $this, 'webinarUserProfileFields' ), 10, 1  );
+        add_action( 'user_new_form', array( $this, 'webinarUserProfileFields' ) ); // creating a new user
         
         //Save the entered data
         add_action( 'personal_options_update', array( $this, 'progressProfileSave' ) );
@@ -104,10 +104,9 @@ class RecordUserCourseProgress
         add_action( 'user_register', array( $this, 'progressProfileSave' ) );
     }
 
-    public function courseUserProfileFields( $profileuser ) {	
+    public function webinarUserProfileFields( $profileuser ) {	
         $loc = __CLASS__ . '::' . __FUNCTION__;
         $this->log->error_log( $loc );
-
 
         if( !current_user_can( 'edit_user' ) ) return;
 
@@ -120,7 +119,7 @@ class RecordUserCourseProgress
         }
         if( !$ok ) return;
     ?>
-    <h3>Course Progress Reports</h3>
+    <h3>Webinar Progress Reports</h3>
 		<table class="form-table">
 			<tr>
 				<td>
@@ -131,7 +130,7 @@ class RecordUserCourseProgress
 		</table>
     <?php
     }
-
+    
 	public function progressEmitter( $user )
     {
         $loc = __CLASS__ . '::' . __FUNCTION__;
@@ -140,12 +139,13 @@ class RecordUserCourseProgress
 		$user_id = $user->ID;
         $this->log->error_log( sprintf("%s: User id=%d and email=%s",$loc, $user_id, $user->user_email ));
     
-        //Setup the course selection options
-        $select_title = __('---Select A Course To Report---', CARE_TEXTDOMAIN );
+        //Setup the webinar selection options
+        $select_title = __('---Select A Webinar To Report---', CARE_TEXTDOMAIN );
         $tmpl = '<option value="%s">%s</option>';
-        $selection = '<select id="course-select">';
+        $selection = '<select id="webinar-select">';
         $selection .= '<option value="0" selected="selected">' . $select_title . '</option>';
-        $args = array( 'post_type' => Course::CUSTOM_POST_TYPE, 'posts_per_page' => -1 ); 
+        
+        $args = array( 'post_type' => Webinar::CUSTOM_POST_TYPE, 'posts_per_page' => -1 ); 
         $loop = new WP_Query( $args );
         if ($loop->have_posts()) {
             while ( $loop->have_posts() ) {
@@ -154,7 +154,7 @@ class RecordUserCourseProgress
             }
         }
         else {
-            $selection .= sprintf( $tmpl, 0, "No Courses found" );
+            $selection .= sprintf( $tmpl, 0, "No Webinars found" );
         }    
         // Reset Post Data 
         wp_reset_postdata();
@@ -172,23 +172,22 @@ class RecordUserCourseProgress
         $out  = $selection;
         
         //Now provide means to record progress or register re other courses
-        $register = "<button id='register-for-course' name='register-for-course' type='button'>$register_title</button>";
-        //$toggle = "<button id='toggle-course-status' name='record-course-completed' type='button'>$toggle_title</button>";
-        $remove   = "<button id='remove-course' name='remove-course' type='button'>$remove_title</button>";
+        $register = "<button id='register-for-webinar' name='register-for-webinar' type='button'>$register_title</button>";
+        //$toggle = "<button id='toggle-webinar-status' name='record-webinar-completed' type='button'>$toggle_title</button>";
+        $remove   = "<button id='remove-webinar' name='remove-webinar' type='button'>$remove_title</button>";
         //$done     = "<button id='done-course-work' name='done-course-work' type='button'>$save_title</button>";
 		//$caption = __('Please click "Update" when done.', CARE_TEXTDOMAIN );
         //Currently registered course statuses
         $classes = self::TABLE_CLASS;
         $out .= '<table class="' . $classes . '">';
         //$out .= '<caption style="caption-side:bottom; align:right;">' . $caption . '</caption>';
-        $out .= '<thead><th>Course</th><th>Start Date</th><th>Status</th><th>Operation</th></thead>';
+        $out .= '<thead><th>Webinar</th><th>Start Date</th><th>Status</th><th>Operation</th></thead>';
         $out .= '<tbody>';
-        //$out .= sprintf("<tr id=\"add\"><td id=\"selection\" colspan=\"2\">%s</td><td>%s %s</td></tr>", $selection, $complete, $remove );
 
         //Note: recorded_courses is a 2-d array
-        //delete_user_meta( $user_id, RecordUserCourseProgress::META_KEY);
-        $recorded_courses = get_user_meta( $user_id, self::META_KEY, false );
-        $this->log->error_log( $recorded_courses,"$loc Entire course record from user meta:" );
+        //delete_user_meta( $user_id, self::META_KEY);
+        $recorded_webinars = get_user_meta( $user_id, self::META_KEY, false );
+        $this->log->error_log( $recorded_webinars, "$loc Entire webinar record from user meta:" );
 
         $templ = <<<EOT
             <tr id="%d">
@@ -199,11 +198,11 @@ class RecordUserCourseProgress
             </tr>
 EOT;
         $ctr = 0;
-        foreach( $recorded_courses as $arrcourse ) {
-            $this->log->error_log("$loc --> Course Reports from user meta...");
-            foreach( $arrcourse as $course) {
-                $this->log->error_log( $course );
-                $st = isset( $course['status'] ) ? $course['status'] : self::PENDING;
+        foreach( $recorded_webinars as $arrwebinars ) {
+            $this->log->error_log("$loc --> Webinar Reports from user meta...");
+            foreach( $arrwebinars as $webinar ) {
+                $this->log->error_log( $webinar );
+                $st = isset( $webinar['status'] ) ? $webinar['status'] : self::PENDING;
                 $select = '<select id="statusSelect" name="status">';
                 foreach($this->statuses as $status ) {
                     if( $st === $status ) {
@@ -215,29 +214,29 @@ EOT;
                 }
                 $select .= "</select>";
                 $row = sprintf( $templ
-                              , $course['id']
-                              , $course['name']
-                              , isset($course["startDate"]) ? $course["startDate"] : '1970-01-01'
+                              , $webinar['id']
+                              , $webinar['name']
+                              , isset($webinar["startDate"]) ? $webinar["startDate"] : '1970-01-01'
                               , $select
                               , $remove );
                 $out .= $row;
                 $val = sprintf("%d|%s|%s|%s"
-                              , $course['id']
-                              , $course['name']
-                              , isset($course["startDate"]) ? $course["startDate"] : '1970-01-01'
+                              , $webinar['id']
+                              , $webinar['name']
+                              , isset($webinar["startDate"]) ? $webinar["startDate"] : '1970-01-01'
                               , $st );
-                $hidden .= sprintf("<input type=\"hidden\" name=\"coursereports[]\" value=\"%s\"> ", $val );
+                $hidden .= sprintf("<input type=\"hidden\" name=\"webinarreports[]\" value=\"%s\"/> ", $val );
             }
         }
         $out .= '</tbody></table>';  
         $out .= $hidden; 
 
-        $out .= "<div id='care-coursemessage'></div>";
+        $out .= "<div id='care-webinarmessage'></div>";
         $out .= "</div>";
 
         return $out;
     }
-    
+
     public function progressProfileSave( $userId ) 
     {
         $loc = __CLASS__ . '::' . __FUNCTION__;
@@ -247,35 +246,36 @@ EOT;
         if ( !current_user_can('edit_user', $userId)) {
             return;
         }
-
-        //Get the registered courses
-        if ( !empty( $_POST['coursereports'] )) {
-            $coursereports = $_POST['coursereports'];
+        
+        //Get the registered webinars
+        if ( !empty( $_POST['webinarreports'] )) {
+            $webinarreports = $_POST['webinarreports'];
         }
-        elseif ( !empty( $_GET['coursereports'] )) {
-            $coursereports = $_GET['coursereports'];
+        elseif ( !empty( $_GET['webinarreports'] )) {
+            $webinarreports = $_GET['webinarreports'];
         }
         else {
-            $coursereports = array();
+            $webinarreports = array();
         }
 
-        if( is_string( $coursereports ) ) {
-            $s = $coursereports;
-            $coursereports = array();
-            array_push( $coursereports, $s );
+        if( is_string( $webinarreports ) ) {
+            $s = $webinarreports;
+            $webinarreports = array();
+            array_push( $webinarreports, $s );
         }
-        $this->log->error_log( $coursereports, "Length of course reports=" . count( $coursereports ) );
 
-        $_SESSION[self::SESSION_MESSAGE_KEY] = $this->storeCourseProgress( $userId, $coursereports );
+        $this->log->error_log("Length of webinar reports=" . count( $webinarreports ) );
+        $this->log->error_log( $webinarreports );
+        $_SESSION[self::SESSION_MESSAGE_KEY] = $this->storeWebinarProgress( $userId, $webinarreports );
 
         return;
     }
 
-    private function storeCourseProgress( $userId, $statusreports ) {
+    private function storeWebinarProgress( $userId, $statusreports ) {
         $loc = __CLASS__ . '::' . __FUNCTION__;
         $this->log->error_log( $loc );
-
-        $courses = array();
+        
+        $webinars = array();
         $tracker = array();
         $format = 'Y-m-d';
         foreach( $statusreports as $report ) {
@@ -283,52 +283,52 @@ EOT;
             if( !in_array( $arr[0], $tracker ) ) {
                 $this->log->error_log( $report );
                 array_push( $tracker, $arr[0] );
-                $course = array();
-                $course['id']        = $arr[0];
-                $course['name']      = $arr[1];
+                $webinar = array();
+                $webinar['id']        = $arr[0];
+                $webinar['name']      = $arr[1];
                 $date = DateTime::createFromFormat($format, $arr[2]);
                 if( false === $date ) {
                     $this->log->error_log( DateTime::getLastErrors(), "Error processing start date" );
                     $date = DateTime::createFromFormat($format, '1970-01-01');
                 }
-                $this->log->error_log($date->format( $format ), "Date" );
-                $course["startDate"] = $date->format( $format );
-                $course['status']    = $arr[3];
-                array_push( $courses, $course );
+                $this->log->error_log( $date->format( $format ), "Date: ");
+                $webinar["startDate"] = $date->format( $format );
+                $webinar['status']    = $arr[3];
+                array_push( $webinars, $webinar );
             }
         }
         
-        $this->log->error_log( $courses, "Courses..." );
+        $this->log->error_log( $webinars, "Webinars..." );
 
-        //TODO: Need to make sure that the course still exists in carecourse's.
-        $len = count( $courses );
+        //TODO: Need to make sure that the webinars still exists in carewebinar's.
+        $len = count( $webinars );
         if( 0 === $len ) {
-            if( delete_user_meta( $userId, self::META_KEY) ) {
-                $mess = "Removed all course progress reports.";
+            if( delete_user_meta( $userId, self::META_KEY ) ) {
+                $mess = "Removed all webinar progress reports.";
             }
             else {
-                $mess = "No course progress reports existed so none were removed.";
+                $mess = "No webinar progress reports exist so none were removed.";
             }
         }
         else {
             //array is returned because $single is false
-            $prev_courses = get_user_meta( $userId, self::META_KEY, false );
-            if( count( $prev_courses ) < 1 ) {
-                $meta_id = add_user_meta( $userId, self::META_KEY, $courses, true );
-                $mess = sprintf("Added %d course %s. (Meta id=%d)", $len, $len === 1 ? 'progress report' : 'progress reports', $meta_id );
+            $prev_webinars = get_user_meta($userId, self::META_KEY, false );
+            if( count( $prev_webinars ) < 1 ) {
+                $meta_id = add_user_meta( $userId, self::META_KEY, $webinars, true );
+                $mess = sprintf("Added %d webinar %s. (Meta id=%d)", $len, $len === 1 ? 'progress report' : 'progress reports', $meta_id );
             }
             else {
-                $meta_id = update_user_meta( $userId, self::META_KEY, $courses );
+                $meta_id = update_user_meta( $userId, self::META_KEY, $webinars );
                 if( true === $meta_id ) {
-                    $mess = sprintf("Updated %d course %s.", $len, $len === 1 ? 'progress report' : 'progress reports' );
+                    $mess = sprintf("Updated %d webinar %s.", $len, $len === 1 ? 'progress report' : 'progress reports' );
                 }
                 elseif( is_numeric( $meta_id ) ) {
-                    $mess = sprintf("Added %d course %s. (Meta id=%d)", $len, $len === 1 ? 'progress report' : 'progress reports', $meta_id );
+                    $mess = sprintf("Added %d webinar %s. (Meta id=%d)", $len, $len === 1 ? 'progress report' : 'progress reports', $meta_id );
                 }
 
             }
             if( false === $meta_id ) {
-                $mess = "Course progress reports were not added/updated.";
+                $mess = "Webinar progress reports were not added/updated.";
             }
         }
 

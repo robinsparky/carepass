@@ -11,23 +11,81 @@
 */
 class Webinar extends BaseCustomMediaPostType {
 	
-	const CUSTOM_POST_TYPE = 'carewebinar';
+	const CUSTOM_POST_TYPE     = 'carewebinar';
+	const CUSTOM_POST_TYPE_TAX = 'carewebinartax';
+	const CUSTOM_POST_TYPE_TAG = 'webinartag';
+
 	const VIDEO_META_KEY = '_care_webinar_video_key';
 	const CURRICULUM_META_KEY = '_care_webinar_curriculum_key';
 	const JS_OBJECT = 'care_webinar_media_obj';
+	
+	static private $AllWebinars = array();
 
     //Only emit on these page
 	private $hooks = array('post.php', 'post-new.php');
 	private $curriculum;
-
 	private $log;
+	
+	/**
+	 * Retrieve All PASS Webinars and meta data from db
+	 * @param $force Boolean to force fresh retrieval from database
+	 */
+	static public function getWebinarDefinitions( $force = false ) {
+		$loc = __CLASS__ . '::' . __FUNCTION__;
+
+		$map = array( self::VIDEO_META_KEY => 'video'
+					, self::CURRICULUM_META_KEY => 'curriculum'
+				);
+
+		global $wpdb;
+		if( $force || count( self::$AllWebinars ) < 1 ) {
+			$sql = "SELECT p.ID as id, p.post_title as name, pm.meta_key as 'key', pm.meta_value as val
+					FROM {$wpdb->prefix}postmeta pm
+					inner join {$wpdb->prefix}posts p on p.ID = pm.post_id
+					where p.post_type = '%s' 
+					order by p.post_title;";
+			$query = $wpdb->prepare( $sql, self::CUSTOM_POST_TYPE );
+			$result = $wpdb->get_results( $query, ARRAY_A );
+
+			$retval = array();
+			$ids = array();
+			foreach( $result as $row ) {
+				// error_log("$loc-->row:");
+				// error_log( print_r($row, true ) );
+				if( in_array( $row['id'], $ids ) ) {
+					foreach( $retval as &$c ) {
+						if( $row['id'] ===  $c['id'] ) {
+							if( array_key_exists($row['key'], $map ) ) {
+								$c[$map[$row['key']]] = $row['val'];
+							}
+						}
+					}
+				}
+				else {
+					array_push( $ids, $row['id'] );
+					$webinar = array();
+					$webinar['id'] = $row['id'];
+					$webinar['name'] = $row['name'];
+					if( array_key_exists($row['key'], $map ) ){
+						$webinar[$map[$row['key']]] = $row['val'];
+					}
+					array_push( $retval, $webinar );
+				}
+				// error_log("$loc-->retval:");
+				// error_log( print_r( $retval, true ) );
+			}
+			self::$AllWebinars = $retval;
+		}
+
+		return self::$AllWebinars;
+	}
 
 	public function __construct() {
 		$loc = __CLASS__ . '::' . __FUNCTION__;
 
 		$this->mediaMetaBoxId = 'care_webinar_video_meta_box';
 		$this->curriculum = array( 'essential' => 'Essential', 'recommended' =>'Recommended' );
-		$this->log = new BaseLogger( false );
+		$this->log = new BaseLogger( true );
 	}
 
 	public function register() {
@@ -35,6 +93,8 @@ class Webinar extends BaseCustomMediaPostType {
 		$this->log->error_log( $loc );
 
 		add_action( 'init', array( $this, 'customPostType') ); 
+		add_action( 'init', array( $this, 'customTaxonomy' ) );
+
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue') );
 			
 		add_filter( 'manage_' . self::CUSTOM_POST_TYPE . '_posts_columns', array( $this, 'addColumns' ), 5 );
@@ -70,7 +130,7 @@ class Webinar extends BaseCustomMediaPostType {
 		$loc = __CLASS__ . '::' . __FUNCTION__;
 		$this->log->error_log( $loc );
 
-		$labels = array( 'name' => 'Webinars'
+		$labels = array( 'name' => 'PASS Webinars'
 						, 'singular_name' => 'Webinar'
 						, 'add_new' => 'Add Webinar'
 						, 'add_new_item' => 'New Webinar'
@@ -78,7 +138,7 @@ class Webinar extends BaseCustomMediaPostType {
 						, 'edit_item' => 'Edit Webinar'
 						, 'view_item' => 'View Webinar'
 						, 'all_items' => 'All Webinars'
-						, 'menu_name' => 'Webinars'
+						, 'menu_name' => 'PASS Webinars'
 						, 'search_items'=>'Search Webinars'
 						, 'not_found' => 'No Webinars found'
 						, 'not_found_in_trash'=> 'No Webinars found in Trash' );
@@ -96,6 +156,45 @@ class Webinar extends BaseCustomMediaPostType {
 					, 'supports' => array( 'title', 'editor', 'thumbnail', 'excerpt', 'revisions' ) 
 					, 'public' => true );
 		register_post_type( self::CUSTOM_POST_TYPE, $args );
+	}
+	
+	public function customTaxonomy() {
+        $loc = __CLASS__ . '::' . __FUNCTION__;
+		$this->log->error_log( $loc );
+		
+			//hierarchical
+		$labels = array( 'name' => 'Webinar Categories'
+						, 'singular_name' => 'Webinar Category'
+						, 'search_items' => 'Search Webinar Category'
+						, 'all_items' => 'All Webinar Categories'
+						, 'parent_item' => 'ParentWebinar Category'
+						, 'parent_item_colon' => 'Parent Webinar Category:'
+						, 'edit_item' => 'Edit Webinar Category'
+						, 'update_item' => 'Update Webinar Category'
+						, 'add_new_item' => 'Add New Webinar Category'
+						, 'new_item_name' => 'New Webinar Category'
+						, 'menu_name' => 'Webinar Categories'
+						);
+
+		$args = array( 'hierarchical' => true
+					 , 'labels' => $labels
+					 , 'show_ui' => true
+					 , 'show_admin_column' => true
+					 , 'query_var' => true
+					 , 'rewrite' => array( 'slug' => self::CUSTOM_POST_TYPE_TAX )
+					);
+
+		register_taxonomy( self::CUSTOM_POST_TYPE_TAX
+						 , array( self::CUSTOM_POST_TYPE )
+						 , $args );
+
+		//NOT hierarchical
+		register_taxonomy( self::CUSTOM_POST_TYPE_TAG
+						 , self::CUSTOM_POST_TYPE
+						 , array( 'label' => 'Webinar Tags'
+								, 'rewrite' => array( 'slug' => self::CUSTOM_POST_TYPE_TAG )
+								, 'hierarchical' => false
+						));
 	}
 
 	// Add Webinar columns

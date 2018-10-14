@@ -3,22 +3,26 @@
  * Register custom post types
  */
 require get_stylesheet_directory() . '/inc/class-Webinar.php';
-//require get_stylesheet_directory() . '/inc/class-Course.php';
+require get_stylesheet_directory() . '/inc/class-Course.php';
 
 /**
  * Register classes for Event-Course interoperation
  */
 //require get_stylesheet_directory() . '/inc/class-CourseSession.php';
 //require get_stylesheet_directory() . '/inc/class-CourseRegisterByEmail.php';
-require get_stylesheet_directory() . '/inc/class-CourseRegisterByEvent.php';
+//require get_stylesheet_directory() . '/inc/class-CourseRegisterByEvent.php';
 
 /**
  * Register ajax-based classes
  */
 //Report course & webinar progress in user's page
-ReportCourseProgress::register();
-//Record course & webinar progress on profile page
+ReportMemberProgress::register();
+
+//Record webinar progress on profile page
+RecordUserWebinarProgress::register();
+//Record course progress on profile page
 RecordUserCourseProgress::register();
+
 //Record progress watching a webinar
 WatchWebinarProgress::register();
 //CareMediaSelector::register();

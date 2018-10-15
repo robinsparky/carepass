@@ -102,7 +102,6 @@ class Webinar extends BaseCustomMediaPostType {
 		
 		//Required actions for meta box
 		add_action( 'add_meta_boxes', array( $this, 'metaBoxes' ), 5 );
-		add_action( 'save_post', array( $this, 'curriculumSave' ), 5 ) ;
 		add_action( 'save_post', array( $this, 'videoSave' ), 5 );
 
 	}
@@ -239,16 +238,6 @@ class Webinar extends BaseCustomMediaPostType {
 	================================================
 	*/
 	public function metaBoxes() {
-
-		/* Curriculum meta box */
-		add_meta_box( 'care_webinar_curriculum_meta_box' //id
-					, 'Curriculum' //Title
-					, array( $this, 'curriculumCallback' ) //Callback
-					, self::CUSTOM_POST_TYPE //mixed: screen et cpt name, or ???
-					, 'side' //context: normal, side, 
-					, 'default' // priority: low, high, default
-						// array callback args
-					);
 					
 		/* Webinar Video Meta Box */
 		add_meta_box( $this->mediaMetaBoxId //id
@@ -260,64 +249,6 @@ class Webinar extends BaseCustomMediaPostType {
 						// array callback args
 					);
 
-	}
-	
-	public function curriculumCallback( $post ) {
-        $loc = __CLASS__ . '::' . __FUNCTION__;
-		$this->log->error_log( $loc );
-
-		wp_nonce_field( 'curriculumSave' //action
-					  , 'care_webinar_curriculum_nonce');
-
-		$actual = get_post_meta( $post->ID, self::CURRICULUM_META_KEY, true );
-		$this->log->error_log("$loc --> current value='$actual'");
-
-		//Now echo the html desired
-		$this->log->error_log( $this->curriculum, "Curriculum options:" );
-		echo'<select name="care_webinar_curriculum_field">';
-		foreach( $this->curriculum as $key => $val ) {
-			$disp = esc_attr($val);
-			$value = esc_attr($key);
-			$sel = '';
-			if($actual === $key) $sel = 'selected';
-			echo "<option value='$value' $sel>$disp</option>";
-		}
-		echo '</select>';
-	}
-
-	public function curriculumSave( $post_id ) {
-        $loc = __CLASS__ . '::' . __FUNCTION__;
-		$this->log->error_log($loc);
-
-		if( ! isset( $_POST['care_webinar_curriculum_nonce'] ) ) {
-			$this->log->error_log("$loc --> no nonce");
-			return;
-		}
-
-		if( ! wp_verify_nonce( $_POST['care_webinar_curriculum_nonce'] , 'curriculumSave'  )) {
-			$this->log->error_log("$loc --> bad nonce");
-			return;
-		}
-
-		if( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
-			$this->log->error_log("$loc --> doing autosave");
-			return;
-		}
-
-		if( ! current_user_can( 'edit_post', $post_id ) ) {
-			$this->log->error_log("$loc --> cannot edit post");
-			return;
-		}
-
-		if( ! isset( $_POST['care_webinar_curriculum_field'] ) ) {
-			$this->log->error_log("$loc --> no curriculum field");
-			return;
-		}
-
-		$my_data = sanitize_text_field( $_POST['care_webinar_curriculum_field'] );
-		$this->log->error_log("$loc --> returned value='$my_data'");
-
-		update_post_meta( $post_id, self::CURRICULUM_META_KEY, $my_data );
 	}
 	
 	public function videoCallback( $post ) {

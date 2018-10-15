@@ -69,7 +69,7 @@ function archive_carecourse_query( $query ) {
 	
 	if( $query->is_main_query() && !$query->is_feed() && !is_admin() 
 	&& $query->is_post_type_archive( 'carecourse' ) ) {
-		$courses_per_page = get_option('care_courses_page_size', 10 );
+		$courses_per_page = get_option('care_webinars_page_size', 10 );
 		error_log("$loc --> courses per page=$courses_per_page");
 
 		$tax_query = array('relation' => 'AND'
@@ -87,6 +87,36 @@ function archive_carecourse_query( $query ) {
 	}
 }
 add_action( 'pre_get_posts', 'archive_carecourse_query' );
+
+/**
+ * Customize the Query for Care/PASS Webinar Archives
+ * @param object $query data
+ *
+ */
+function archive_carewebinar_query( $query ) {
+    $loc = __FILE__ . '/' . __FUNCTION__;
+    error_log("$loc");
+	
+	if( $query->is_main_query() && !$query->is_feed() && !is_admin() 
+	&& $query->is_post_type_archive( 'carewebinar' ) ) {
+		$webinars_per_page = get_option('care_webinars_page_size', 10 );
+		error_log("$loc --> webinars per page=$webinars_per_page");
+
+		$tax_query = array('relation' => 'AND'
+						, array( 'taxonomy' => 'carewebinartax'
+							, 'field' => 'slug'
+							, 'terms' => array('workshop')
+							, 'operator' => 'NOT IN'
+							)
+					);
+
+		$query->set( 'tax_query', $tax_query );
+		$query->set( 'orderby', 'title' );
+		$query->set( 'order', 'ASC' );
+		$query->set( 'posts_per_page', $webinars_per_page );
+	}
+}
+add_action( 'pre_get_posts', 'archive_carewebinar_query' );
 
 /**
  * Customize the Query for Care Course Taxonomy - Workshop

@@ -31,13 +31,12 @@ get_header();  ?>
 			<!-- Blog Area -->
 			<div class="<?php appointment_post_layout_class(); ?>" >
 			<?php
-                $args = array( 'posts_per_page' => '10', 'post_type' => 'carewebinar' ); 
-                $loop = new WP_Query( $args ); 
-                while ( $loop->have_posts() ) : 
-                    $loop->the_post();
+                while ( have_posts() ) : 
+                    the_post();
                     global $more;
                     $more = 0; 
                 ?>
+                <hr style="clear:left;">
 				<h3><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h3>
                 <small>		
 					<div>		
@@ -45,7 +44,6 @@ get_header();  ?>
 					?>
 					</div>
 					<?php 
-					$curriculum = get_post_meta( get_the_ID(), Webinar::CURRICULUM_META_KEY, true );
 					$videoUrl = get_post_meta( get_the_ID(), Webinar::VIDEO_META_KEY, true );
 					$hasVideo = 'No';
 					if( @$videoUrl ) $hasVideo = 'Yes';

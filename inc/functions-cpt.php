@@ -20,8 +20,12 @@ ReportMemberProgress::register();
 
 //Record webinar progress on profile page
 RecordUserWebinarProgress::register();
+
 //Record course progress on profile page
 RecordUserCourseProgress::register();
+
+//Record membership data (e.g. joined mentorship )
+RecordUserMemberData::register();
 
 //Record progress watching a webinar
 WatchWebinarProgress::register();

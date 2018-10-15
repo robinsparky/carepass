@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /** 
- * Report Member Progress is implemented using shortcodes
+ * Reporting Member Progress and other PASS member data is implemented using shortcodes
  * @class  ReportMemberProgress
  * @package Care
  * @version 1.0.0
@@ -29,6 +29,7 @@ class ReportMemberProgress
  
         add_shortcode( 'webinar_progress', array( $handler, 'webinarProgressShortcode' ) );
         add_shortcode( 'course_progress', array( $handler, 'courseProgressShortcode' ) );
+        add_shortcode( 'passmember_data', array( $handler, 'memberDataShortcode' ) );
         add_action('wp_enqueue_scripts', array( $handler, 'registerScript' ) );
         $handler->registerHandlers();
     }
@@ -84,12 +85,10 @@ class ReportMemberProgress
         $overall_title  = __('Course Progress Report', CARE_TEXTDOMAIN );
         $out  = "<div id=\"progress-container\">";
         $out .= "<h2>$overall_title</h2>";
-        $caption = "Please contact your case manager if you have questions.";
 
         //Currently registered course statuses
         $out .= "<hr>";
         $out .= '<table class="coursestatus">';
-        $out .= '<caption style="caption-side:bottom; align:right;">' . $caption . '</caption>';
         $out .= '<thead><th>Course</th><th>Start Date</th><th>Status</th></thead>';
         $out .= '<tbody>';
         //$out .= sprintf("<tr id=\"add\"><td id=\"selection\" colspan=\"2\">%s</td><td>%s %s</td></tr>", $selection, $complete, $remove );
@@ -172,9 +171,10 @@ EOT;
         $this->log->error_log( sprintf("%s: User id=%d and email=%s",$loc, $user_id, $currentuser->user_email ));
     
         $overall_title  = __('Webinar Progress Report', CARE_TEXTDOMAIN );
+        
+        $caption = __("Please contact your case manager if you have questions.", CARE_TEXTDOMAIN) ;
         $out  = "<div id=\"progress-container\">";
         $out .= "<h2>$overall_title</h2>";
-        $caption = "Please contact your case manager if you have questions.";
 
         //Current webinar statuses
         $out .= "<hr>";
@@ -205,7 +205,7 @@ EOT;
             $gotIt = false;
             foreach( $arrwebinar as $webinar) {
                 if( $defn['id'] === $webinar['id']) {
-                    $this->log->error_log( $course, 'Course from meta' );
+                    $this->log->error_log( $webinar, 'Course from meta' );
                     $row = sprintf( $templ
                                 , $webinar["id"]
                                 , $webinar["name"]
@@ -228,6 +228,55 @@ EOT;
         $out .= '</tbody></table>';
         $out .= '</div>';
         return $out;
+    }
+
+    public function memberDataShortcode( $atts, $content = null ) {
+        $loc = __CLASS__ . '::' . __FUNCTION__;
+
+        $this->log->error_log( $loc );
+        
+        $currentuser = wp_get_current_user();
+        if ( ! ( $currentuser instanceof WP_User ) ) {
+            return '<h1>ET call home!</h1>';
+        }
+
+        $ok = false;
+        foreach( $this->roles as $role ) {
+            if( in_array( $role, $currentuser->roles ) ) {
+                $ok = true;
+                break;
+            }
+        }
+
+        if(! $ok ) return '';
+
+		$myshorts = shortcode_atts( array("user_id" => 0), $atts, 'webinar_progress' );
+        extract( $myshorts );
+        
+        if( !is_user_logged_in() ){
+            return "Member is not logged in!";
+        }
+
+        $user_id = (int) $currentuser->ID;
+        $this->log->error_log( sprintf("%s: User id=%d and email=%s",$loc, $user_id, $currentuser->user_email ));
+    
+        $joinedMentorship = get_user_meta( $user_id, RecordUserMemberData::META_KEY, true );
+        if( $joinedMentorship !== 'yes') $joinedMentorship = 'no';
+        $this->log->error_log( $joinedMentorship, "$loc --> joined Mentorship" );
+        $label = __( "Did you join the mentorship program?", CARE_TEXTDOMAIN );
+        $checked = $joinedMentorship === "yes" ? "checked" : "";
+        $templ = <<<EOT
+            <div>
+            <label for="mentorship">%s</label>
+            <input id="pass_mentorship" name="pass_mentorship" disabled type="checkbox" value="%s" %s/>
+            </div>
+EOT;
+
+        $out = "<fieldset>";
+        $out .= sprintf($templ, $label, $joinedMentorship, $checked);
+        $out .= "</fieldset>";
+        return $out;
+
     }
 
     private function handleErrors( string $mess ) {

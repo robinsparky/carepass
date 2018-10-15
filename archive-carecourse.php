@@ -46,7 +46,7 @@ get_header();  ?>
 					$needsApproval = get_post_meta( get_the_ID(), Course::NEEDS_APPROVAL_META_KEY, true );
 					$instructions = $needsApproval === 'yes' ? 'Note: Requires case manager approval' : '';
 					?>
-					<div class="coursemeta" style="float:right">
+					<div class="course-meta" style="float:right">
 					<span>Price: $<?php echo $price ?></span>
 					&nbsp;<span>Duration: <?php echo $duration ?> hours</span>
 					&nbsp;<span><?php echo $instructions ?></span>

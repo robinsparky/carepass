@@ -84,7 +84,7 @@ class ReportMemberProgress
     
         $overall_title  = __('Course Progress Report', CARE_TEXTDOMAIN );
         $out  = "<div id=\"progress-container\">";
-        $out .= "<h2>$overall_title</h2>";
+        $out .= "<h3>$overall_title</h3>";
 
         //Currently registered course statuses
         $out .= "<hr>";
@@ -174,7 +174,7 @@ EOT;
         
         $caption = __("Please contact your case manager if you have questions.", CARE_TEXTDOMAIN) ;
         $out  = "<div id=\"progress-container\">";
-        $out .= "<h2>$overall_title</h2>";
+        $out .= "<h3>$overall_title</h3>";
 
         //Current webinar statuses
         $out .= "<hr>";

@@ -20,7 +20,6 @@ class WatchWebinarProgress
      */
     const ACTION   = 'watchWebinarProgess';
     const NONCE    = 'watchWebinarProgess';
-    const META_KEY = "webinar_status";
 
     private $ajax_nonce = null;
     private $errobj = null;
@@ -38,8 +37,6 @@ class WatchWebinarProgress
         $loc = __CLASS__ . '::' . __FUNCTION__;
         
         $handler = new self();
-        //add_action( 'template-redirect', array( $handler, 'registerScript') );
-        add_shortcode( 'user_webinar_status', array( $handler, 'webinarProgressShortcode' ) );
         add_action('wp_enqueue_scripts', array( $handler, 'registerScript' ) );
         $handler->registerHandlers();
     }
@@ -47,8 +44,8 @@ class WatchWebinarProgress
 	/*************** Instance Methods ****************/
 	public function __construct( ) {
 	    $this->errobj = new WP_Error();
-        $this->roles = array('um_caremember', 'um_member');
-        $this->log = new BaseLogger( false );
+        $this->roles = array( 'um_member' );
+        $this->log = new BaseLogger( true );
     }
 
     public function registerScript() {
@@ -65,7 +62,7 @@ class WatchWebinarProgress
                             , get_stylesheet_directory_uri() . '/js/care-watch-webinar.js'
                             , array('jquery') );
     
-            wp_localize_script( 'watch_webinar', 'care_webinar_obj', $this->get_ajax_data() );
+            wp_localize_script( 'watch_webinar', 'care_watch_webinar_obj', $this->get_ajax_data() );
 
             wp_enqueue_script( 'watch_webinar' );
         }
@@ -101,14 +98,15 @@ class WatchWebinarProgress
             $this->handleErrors('Not Ajax');
         }
         
-        if( !is_user_logged_in() ){
-            $this->handleErrors( __( 'Worker is not logged in!.', CARE_TEXTDOMAIN ));
+        if( !is_user_logged_in() ) {           
+            $this->errobj->add( $this->errcode++, __( 'Worker is not logged in!.', CARE_TEXTDOMAIN ));
         }
 
         $currentuser = wp_get_current_user();
         if ( ! ( $currentuser instanceof WP_User ) || empty( $currentuser ) ) {           
              $this->errobj->add( $this->errcode++, __( 'Logged in user not defined!!!', CARE_TEXTDOMAIN ));
         }
+
 
         $ok = false;
         foreach( $this->roles as $role ) {
@@ -121,57 +119,68 @@ class WatchWebinarProgress
         if( current_user_can( 'manage_options' ) ) $ok = true;
         
         if ( !$ok ) {         
-            $this->errobj->add( $this->errcode++, __( 'Only Care or site members can record watching a webinar.', CARE_TEXTDOMAIN ));
+            $this->errobj->add( $this->errcode++, __( 'Only PASS members can record watching a webinar.', CARE_TEXTDOMAIN ));
         }
         
-        //Get the registered courses
+        //Get the registered webinars
+        $webinar = null;
         if ( !empty( $_POST['webinar'] )) {
             $webinar = $_POST['webinar'];
         }
         else {
             $this->errobj->add( $this->errcode++, __( 'No webinar info received.', CARE_TEXTDOMAIN ));
         }
+        
+        if(count($this->errobj->errors) > 0) {
+            $this->handleErrors();
+        }
 
+        $webinar['status'] = RecordUserWebinarProgress::PENDING;
+        if( 0.85 <= $webinar['watchedPct'] ) {
+            $webinar['status'] = RecordUserWebinarProgress::COMPLETED;
+        }
         $this->log->error_log( $webinar, "Watched Webinar" );
 
-        $courses = [];
+        $webinars = [];
         $user_id = $currentuser->ID;
-        $prev_courses = get_user_meta($user_id, self::META_KEY, false );
+        $prev_webinars = get_user_meta($user_id, RecordUserWebinarProgress::META_KEY, false );
         
-        if( count( $prev_courses ) < 1 ) { 
-            array_push($courses, $webinar );
-            $meta_id = add_user_meta( $user_id, self::META_KEY, $courses, true );
-            $mess = sprintf("Recorded  webinar '%s' as Completed", $webinar["name"] );
+        if( count( $prev_webinars ) < 1 ) { 
+            array_push( $webinars, $webinar );
+            $meta_id = add_user_meta( $user_id, self::META_KEY, $webinars, true );
+            $mess = sprintf("Recorded  webinar '%s'", $webinar["name"] );
         }
         else {
             //Check to see in webinar is already stored
             //If present then set its status to completed
             $found = false;
-            foreach($prev_courses as $arrprev) {
-                foreach( $arrprev as $prev ) {  
-                    if( $webinar['id'] === $prev['id'] ) {
-                        $found = true;
-                        $pc['status'] = 'Completed';
-                    }
-                    array_push($courses, $prev);
+            $arrprev = $prev_webinars[0];
+            foreach( $arrprev as $prev ) {  
+                if( $webinar['id'] === $prev['id'] ) {
+                    $found = true;
+                    $prev['startDate'] = $webinar['startDate'];
+                    $prev['endDate'] = $webinar['endDate'];
+                    $prev['watchedPct'] = $webinar['watchedPct'];
+                    $prev['status'] = $webinar['status'];
                 }
+                array_push($webinars, $prev);
             }
 
             //If not present then add it with status set to completed.
             if( ! $found ) {
-                array_push( $courses, $webinar );
+                array_push( $webinars, $webinar );
             }
             
-            $meta_id = update_user_meta( $user_id, self::META_KEY, $courses );
-            $mess = sprintf("Updated records with webinar '%s'.", $webinar['name'] );
+            $meta_id = update_user_meta( $user_id, RecordUserWebinarProgress::META_KEY, $webinars );
+            $mess = sprintf("Updated records with watched webinar '%s'.", $webinar['name'] );
             if( false === $meta_id ) {
-                $mess = "Webinar record was not added/updated.";
+                $mess = "Webinar watch record was not added/updated.";
             }
         }
 
         $response = array();
         $response["message"] = $mess;
-        $response["returnData"] = $courses;
+        $response["returnData"] = $webinars;
         wp_send_json_success( $response );
     
         wp_die(); // All ajax handlers die when finished
@@ -186,90 +195,6 @@ class WatchWebinarProgress
         wp_die(); // All ajax handlers die when finished
     }
      
-	public function webinarProgressShortcode( $atts, $content = null )
-    {
-        $loc = __CLASS__ . '::' . __FUNCTION__;
-
-        $this->log->error_log( $loc );
-        
-
-        $currentuser = wp_get_current_user();
-        if ( ! ( $currentuser instanceof WP_User ) ) {
-            return '<h1>ET call home!</h1>';
-        }
-
-        $ok = false;
-
-        foreach( $this->roles as $role ) {
-            if( in_array( $role, $currentuser->roles ) ) {
-                $ok = true;
-                break;
-            }
-        }
-
-        if( current_user_can( 'manage_options' ) ) $ok = true;
- 
-        if(! $ok ) return '';
-
-		$myshorts = shortcode_atts( array("user_id" => 0), $atts, 'user_status' );
-        extract( $myshorts );
-        
-        if( !is_user_logged_in() ){
-            return "User is not logged in!";
-        }
-
-        $user_id = (int) $currentuser->ID;
-        $this->log->error_log( sprintf("%s: User id=%d and email=%s",$loc, $user_id, $currentuser->user_email ));
-    
-        $overall_title  = __('Webinar Progress Report', CARE_TEXTDOMAIN );
-
-        $out  = "<div id=\"progress-container\">";
-        $out .= "<h2>$overall_title</h2>";
-        
-        $caption = "Please contact your case manager if you have questions.";
-
-        //Currently registered course statuses
-        $out .= "<hr>";
-        $out .= '<table class="coursestatus">';
-        $out .= '<caption style="caption-side:bottom; align:right;">' . $caption . '</caption>';
-        $out .= '<thead><th>Webinar</th><th>Location</th><th>Start Date</th><th>End Date</th><th>Status</th></thead>';
-        $out .= '<tbody>';
-
-        //Note: recorded_courses is a 2-d array
-        $recorded_courses = get_user_meta( $user_id, self::META_KEY, false );
-
-        $templ = <<<EOT
-            <tr id="%d">
-            <td>%s</td>
-            <td>%s</td>
-            <td>%s</td>
-            <td>%s</td>
-            <td>%s</td>
-            </tr>
-EOT;
-        $ctr = 0;
-        foreach( $recorded_courses as $arrcourse ) {
-            $this->log->error_log("$loc --> webinar statuses from user meta...");
-            foreach( $arrcourse as $course) {
-                $this->log->error_log( $course );
-                $row = sprintf( $templ
-                              , $course["id"]
-                              , $course["name"]
-                              , $course["location"]
-                              , $course["startDate"]
-                              , $course["endDate"]
-                              , $course["status"] );
-                $out .= $row;
-            }
-        }
-        $out .= '</tbody></table>';   
-
-        $out .= "<div id='care-resultmessage'></div>";
-        $out .= "</div>";
-
-        return $out;
-    }
-
     /**
      * Get the AJAX data that WordPress needs to output.
      *
@@ -282,7 +207,7 @@ EOT;
             throw new Exception('ET call home!');
         }
         $user_id = $user->ID;
-        $existing_courses = get_user_meta($user_id, self::META_KEY, false );
+        $existing_courses = get_user_meta($user_id, RecordUserWebinarProgress::META_KEY, false );
         
         return array ( 
              'ajaxurl' => admin_url( 'admin-ajax.php' )

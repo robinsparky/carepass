@@ -2,14 +2,15 @@
 
     $(document).ready(function() {       
         let sig = '#care-resultmessage';
-        console.log("Watch Webinar: url=%s",care_webinar_obj.ajaxurl);
+        console.log("Watch Webinar");
+        console.log(care_watch_webinar_obj);
         //Assumes only one video in the page
         let video = document.querySelector("video");
         if( !video ) return;
 
-        console.log(care_webinar_obj);
         var longtimeout = 60000;
         var shorttimeout = 15000;
+
 
         let play = $('#play').on('click',function() { 
             if(video.paused) video.play()
@@ -18,6 +19,10 @@
 
         let progress = $('#progress');
         let restart  = $('#restart').on('click', function() {$(sig).html('');progress.val(0); video.load();} );
+        
+        window.addEventListener( 'blur', function() { console.log('Watch Webinar: blur' + progress.val()); } );
+        window.addEventListener( 'focus', function() { console.log('Watch Webinar: focus'); } );
+
         video.addEventListener('timeupdate', function() {
                                                 let prog = video.currentTime / video.duration;
                                                 let pct = (100*prog).toFixed(2);
@@ -37,7 +42,7 @@
                                                          , location: 'online'
                                                          , startDate: startdatestr
                                                          , endDate: enddatestr
-                                                         , status:'Completed' } 
+                                                         , watchedPct: progress.val() } 
                                                          );
                                         });
         let volume = $("#volume").on('change', function(e) {
@@ -63,16 +68,16 @@
         // console.log(volume);       
         let ajaxFun = function( webinar ) {
             console.log('Watching Webinar: ajaxFun');
-            let reqData =  { 'action': care_webinar_obj.action      
-                            , 'security': care_webinar_obj.security
-                            , 'user_id' : care_webinar_obj.user_id
+            let reqData =  { 'action': care_watch_webinar_obj.action      
+                            , 'security': care_watch_webinar_obj.security
+                            , 'user_id' : care_watch_webinar_obj.user_id
                             , 'webinar': webinar };
             //console.log( reqData );
             console.log("************************Webinar:");
             console.log( webinar );
 
                 // Send Ajax request with data 
-            let jqxhr = $.ajax( { url: care_webinar_obj.ajaxurl    
+            let jqxhr = $.ajax( { url: care_watch_webinar_obj.ajaxurl    
                                 , method: "POST"
                                 , async: true
                                 , data: reqData

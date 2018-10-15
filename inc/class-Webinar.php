@@ -206,7 +206,7 @@ class Webinar extends BaseCustomMediaPostType {
 		$newColumns = array();
 		$newColumns['cb'] = $columns['cb'];
 		$newColumns['title'] = __('Title', CARE_TEXTDOMAIN );
-		$newColumns['webinar_curriculum'] = __( 'Curriculum', CARE_TEXTDOMAIN );
+		$newColumns['taxonomy-carewebinartax'] = __('Category', CARE_TEXTDOMAIN );
 		$newColumns['webinar_video'] = __( 'Video', CARE_TEXTDOMAIN  );
 		$newColumns['date'] = __('Date', CARE_TEXTDOMAIN );
 		return $newColumns;

@@ -325,7 +325,6 @@ EOT;
                 elseif( is_numeric( $meta_id ) ) {
                     $mess = sprintf("Added %d webinar %s. (Meta id=%d)", $len, $len === 1 ? 'progress report' : 'progress reports', $meta_id );
                 }
-
             }
             if( false === $meta_id ) {
                 $mess = "Webinar progress reports were not added/updated.";

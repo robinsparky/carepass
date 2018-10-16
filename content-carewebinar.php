@@ -5,6 +5,15 @@
 			<?php // Check Image size for fullwidth template
 				 appointment_post_thumbnail('','img-responsive');
 				 appointment_post_meta_content();
+				 $ok = false;
+				 if (is_user_logged_in()) {
+					 $currentUser = wp_get_current_user();
+					 error_log( print_r($currentUser->roles, true ) );
+					 if( in_array('um_member', $currentUser->roles )) {
+						 $ok = true;
+						 error_log($ok);
+					 }
+				 }
 				 $postid = get_the_ID();
 				 $videoUrl = get_post_meta( $postid, Webinar::VIDEO_META_KEY, true ); 
 				 error_log( __FILE__ . ": Postid='$postid'; Video Url='$videoUrl'");
@@ -16,6 +25,9 @@
 					<source src="<?php echo $videoUrl ?>" type="video/mp4">
 					Your browser does not support HTML5 video.
 				</video>
+				<?php 
+					if( $ok ) {
+				?>
 				<div style="text-align:center">
 					<progress id="progress" value="0"></progress>
 				</div>
@@ -32,6 +44,7 @@
 				</div>
 
 				<?php
+				}
 				// call editor content of post/page	
 				the_content( __('Read More', 'appointment' ) );
 				wp_link_pages( );

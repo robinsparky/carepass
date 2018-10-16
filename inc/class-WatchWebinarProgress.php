@@ -75,16 +75,8 @@ class WatchWebinarProgress
         add_action( 'admin_enqueue_scripts', array( $this, 'care_admin_scripts' ));
         add_action( 'wp_ajax_' . self::ACTION
                   , array( $this, 'watchWebinarProgess' ));
-        add_action( 'wp_ajax_no_priv_' . self::ACTION
+        add_action( 'wp_ajax_nopriv_' . self::ACTION
                   , array( $this, 'noPrivilegesHandler' ));
-    }
-    
-    public function care_admin_scripts( $hook ) {
-        if( 'myplugin_settings.php' != $hook ) return;
-        // wp_enqueue_script( 'ajax-script',
-        //     plugins_url( '/js/myjquery.js', __FILE__ ),
-        //     array( 'jquery' )
-        // );
     }
     
     public function watchWebinarProgess() {
@@ -103,11 +95,6 @@ class WatchWebinarProgress
         }
 
         $currentuser = wp_get_current_user();
-        if ( ! ( $currentuser instanceof WP_User ) || empty( $currentuser ) ) {           
-             $this->errobj->add( $this->errcode++, __( 'Logged in user not defined!!!', CARE_TEXTDOMAIN ));
-        }
-
-
         $ok = false;
         foreach( $this->roles as $role ) {
             if( in_array( $role, $currentuser->roles ) ) {
@@ -132,7 +119,7 @@ class WatchWebinarProgress
         }
         
         if(count($this->errobj->errors) > 0) {
-            $this->handleErrors();
+            $this->handleErrors("Errors were encountered");
         }
 
         $webinar['status'] = RecordUserWebinarProgress::PENDING;
@@ -160,8 +147,10 @@ class WatchWebinarProgress
                     $found = true;
                     $prev['startDate'] = $webinar['startDate'];
                     $prev['endDate'] = $webinar['endDate'];
-                    $prev['watchedPct'] = $webinar['watchedPct'];
-                    $prev['status'] = $webinar['status'];
+                    if( $prev['status'] != RecordUserWebinarProgress::COMPLETED ) {
+                        $prev['watchedPct'] = $webinar['watchedPct'];
+                        $prev['status'] = $webinar['status'];
+                    }
                 }
                 array_push($webinars, $prev);
             }
@@ -187,12 +176,12 @@ class WatchWebinarProgress
     }
 
     public function noPrivilegesHandler() {
+        $loc = __CLASS__ . '::' . __FUNCTION__;
+        $this->log->error_log("$loc");
         // Handle the ajax request
         check_ajax_referer(  self::NONCE, 'security'  );
-        $response["message"] = "You have been reported to the authorities!";
-        wp_send_json_error( $response );
-        
-        wp_die(); // All ajax handlers die when finished
+        $this->errobj->add( $this->errcode++, __( 'You have been reported to the authorities!', CARE_TEXTDOMAIN ));
+        $this->handleErrors("You've been a bad boy.");
     }
      
     /**
@@ -219,6 +208,8 @@ class WatchWebinarProgress
     }
 
     private function handleErrors( string $mess ) {
+        $loc = __CLASS__ . '::' . __FUNCTION__;
+        $this->log->error_log("$loc");
         $response = array();
         $response["message"] = $mess;
         $response["exception"] = $this->errobj;

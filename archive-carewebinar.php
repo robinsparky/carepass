@@ -37,23 +37,27 @@ get_header();  ?>
                     $more = 0; 
                 ?>
                 <hr style="clear:left;">
+				<?php 
+					$videoUrl = get_post_meta( get_the_ID(), Webinar::VIDEO_META_KEY, true );
+					$hasVideo = 'No';
+					if( @$videoUrl ) $hasVideo = 'Yes';
+					if( $hasVideo === 'Yes') {
+				?>
 				<h3><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h3>
+					<?php }
+					else { ?>
+				<h3><?php the_title(); }?></h3>
                 <small>		
 					<div>		
 					<?php care_mci_get_term_links( $post->ID, 'carewebinartax' ); 
 					?>
 					</div>
-					<?php 
-					$videoUrl = get_post_meta( get_the_ID(), Webinar::VIDEO_META_KEY, true );
-					$hasVideo = 'No';
-					if( @$videoUrl ) $hasVideo = 'Yes';
-					?>
 					<details class="webinar-meta">
 						<summary>Data</summary>
 						<p>Video Available: <?php echo $hasVideo ?></p>
 					</details>
                 </small>
-                <span> <?php echo the_excerpt() ?> </span>
+                <span> <?php echo the_content() ?> </span>
 
 				<?php endwhile;
 				// Previous/next page navigation.

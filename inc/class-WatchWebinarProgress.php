@@ -147,7 +147,7 @@ class WatchWebinarProgress
         
         if( count( $prev_webinars ) < 1 ) { 
             array_push( $webinars, $webinar );
-            $meta_id = add_user_meta( $user_id, self::META_KEY, $webinars, true );
+            $meta_id = add_user_meta( $user_id, RecordUserWebinarProgress::META_KEY, $webinars, true );
             $mess = sprintf("Recorded  webinar '%s'", $webinar["name"] );
         }
         else {

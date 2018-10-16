@@ -65,10 +65,10 @@ function be_event_query( $query ) {
  */
 function archive_carecourse_query( $query ) {
     $loc = __FILE__ . '/' . __FUNCTION__;
-    error_log("$loc");
 	
 	if( $query->is_main_query() && !$query->is_feed() && !is_admin() 
 	&& $query->is_post_type_archive( 'carecourse' ) ) {
+		error_log("$loc");
 		$courses_per_page = get_option('care_webinars_page_size', 10 );
 		error_log("$loc --> courses per page=$courses_per_page");
 
@@ -95,10 +95,10 @@ add_action( 'pre_get_posts', 'archive_carecourse_query' );
  */
 function archive_carewebinar_query( $query ) {
     $loc = __FILE__ . '/' . __FUNCTION__;
-    error_log("$loc");
 	
 	if( $query->is_main_query() && !$query->is_feed() && !is_admin() 
 	&& $query->is_post_type_archive( 'carewebinar' ) ) {
+		error_log("$loc");
 		$webinars_per_page = get_option('care_webinars_page_size', 10 );
 		error_log("$loc --> webinars per page=$webinars_per_page");
 
@@ -125,11 +125,11 @@ add_action( 'pre_get_posts', 'archive_carewebinar_query' );
  */
 function taxonomy_carecourse_query( $query ) {
     $loc = __FILE__ . '/' . __FUNCTION__;
-    error_log("$loc");
 
 	if( $query->is_main_query() && !$query->is_feed() && !is_admin() 
 	&& is_tax( 'coursecategory', 'Workshop' ) ) {
-		$workshops_per_page = get_option('care_courses_page_size', 10 );
+		error_log("$loc");
+		$workshops_per_page = get_option('care_webinars_page_size', 10 );
 		$query->set( 'orderby', 'title' );
 		$query->set( 'order', 'ASC' );
 		$query->set( 'posts_per_page', $workshops_per_page );

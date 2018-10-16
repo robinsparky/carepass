@@ -20,14 +20,20 @@
         let progress = $('#progress');
         let restart  = $('#restart').on('click', function() {$(sig).html('');progress.val(0); video.load();} );
         
-        window.addEventListener( 'blur', function() { console.log('Watch Webinar: blur' + progress.val()); } );
-        window.addEventListener( 'focus', function() { console.log('Watch Webinar: focus'); } );
+        // window.addEventListener( 'blur', function() { console.log('Watch Webinar: blur=' + progress.val()); } );
+        // window.addEventListener( 'focus', function() { console.log('Watch Webinar: focus'); } );
 
         video.addEventListener('timeupdate', function() {
-                                                let prog = video.currentTime / video.duration;
-                                                let pct = (100*prog).toFixed(2);
-                                                progress.val(prog);
-                                                $(sig).html('<h2>' + pct + '%</h2>')	
+                                                if( isNaN(video.currentTime) || isNaN(video.duration)) {
+                                                    $(sig).html('<h2>Missing numeric values</h2>')
+                                                    progress.val(0.0);
+                                                }
+                                                else {
+                                                    let prog = video.currentTime / video.duration;
+                                                    let pct = (100*prog).toFixed(2);
+                                                    progress.val(prog);
+                                                    $(sig).html('<h2>' + pct + '%</h2>')
+                                                }	
                                             });
         video.addEventListener('ended', function() {
                                                 let c = "<h2> '" + video.dataset.name + "' Completed!</h2>";

@@ -18,10 +18,10 @@ require get_stylesheet_directory() . '/inc/class-Course.php';
 //Report course & webinar progress in user's page
 ReportMemberProgress::register();
 
-//Record webinar progress on profile page
+//Record webinar progress on user's profile page
 RecordUserWebinarProgress::register();
 
-//Record course progress on profile page
+//Record course progress on user's profile page
 RecordUserCourseProgress::register();
 
 //Record membership data (e.g. joined mentorship )
@@ -30,6 +30,9 @@ RecordUserMemberData::register();
 //Record progress watching a webinar
 WatchWebinarProgress::register();
 //CareMediaSelector::register();
+
+//Register the Statistics Widget
+Statistics_Dashboard_Widget::register();
 
 /**
  * Customize Event Query using Post Meta

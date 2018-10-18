@@ -146,10 +146,9 @@
         video.addEventListener('ended', ajaxCaller);
 
         window.addEventListener( 'beforeunload', function(e) { 
-            if( !this.window.sentWebinarWatched ) {
+            if( !this.window.sentWebinarWatched && ((progress.length > 0) && progress.val() > 0.1) ) {
                 ajaxCaller();
             }
-            //if( 0.98 >  progress.val() ) return e.returnValue = 'You have not completed watching the webinar'; 
         });
 
 

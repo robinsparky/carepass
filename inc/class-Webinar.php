@@ -34,7 +34,6 @@ class Webinar extends BaseCustomMediaPostType {
 		$loc = __CLASS__ . '::' . __FUNCTION__;
 
 		$map = array( self::VIDEO_META_KEY => 'video'
-					, self::CURRICULUM_META_KEY => 'curriculum'
 				);
 
 		global $wpdb;

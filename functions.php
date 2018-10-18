@@ -40,9 +40,9 @@ function care_pass_setup() {
 }
 
 /* 
-   ===========================================
+   =============================================
 	Function to setup the current theme template
-   ===========================================
+   =============================================
 */
 function care_template_include( $templatepath ){
 	$loc = __FUNCTION__;

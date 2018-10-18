@@ -72,7 +72,6 @@ class WatchWebinarProgress
         $loc = __CLASS__ . '::' . __FUNCTION__;
         $this->log->error_log("$loc");
 
-        add_action( 'admin_enqueue_scripts', array( $this, 'care_admin_scripts' ));
         add_action( 'wp_ajax_' . self::ACTION
                   , array( $this, 'watchWebinarProgess' ));
         add_action( 'wp_ajax_nopriv_' . self::ACTION

@@ -5,7 +5,7 @@ function generateTable(rowsData, titles, type, _class) {
     
     if (type == 2) {//vertical table
         if (rowsData.length !== titles.length) {
-            console.error('rows and data rows count doesent match');
+            console.error('rows and data rows count does not match');
             return false;
         }
         titles.forEach(function (title, index) {
@@ -18,7 +18,7 @@ function generateTable(rowsData, titles, type, _class) {
             $tr.appendTo($tbody);
         });
         
-    } else if (type == 1) {//horsantal table 
+    } else if (type == 1) {//horizontal table 
         var valid = true;
         rowsData.forEach(function (row) {
             if (!row) {
@@ -33,7 +33,7 @@ function generateTable(rowsData, titles, type, _class) {
         });
 
         if (!valid) {
-            console.error('rows and data rows count doesent match');
+            console.error('rows and data rows count doe not match');
             return false;
         }
 

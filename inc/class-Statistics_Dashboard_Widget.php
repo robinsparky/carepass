@@ -220,7 +220,7 @@ class Statistics_Dashboard_Widget {
         $result = $wpdb->get_results( $query, ARRAY_A );
 
         $retval = array();
-        foreach( Webinar::getWebinarDefinitions() as $webinar ) {
+        foreach( Course::getCourseDefinitions() as $webinar ) {
             $retval[$webinar['name']] = [RecordUserCourseProgress::PENDING=>0
                                         ,RecordUserCourseProgress::COMPLETED=>0];
         }         
@@ -241,7 +241,7 @@ class Statistics_Dashboard_Widget {
             if( !is_array( $courses ) ) continue;
 
             foreach($courses as $course) {
-                error_log( "Webinar:" );
+                error_log( "Course:" );
                 error_log( print_r( $course, true ) );
                 $strDate = @$course['startDate'] ? $course['startDate'] : date("Y-m-d");
                 $courseDate = DateTime::createFromFormat('Y-m-d', $strDate );
@@ -253,7 +253,7 @@ class Statistics_Dashboard_Widget {
                     }
                 }
                 $show = $courseDate->format('Y-m-d');
-                error_log("Report date: $startDate; Webinar start: {$show}");
+                error_log("Report date: $startDate; Course start: {$show}");
                 if( $courseDate < $start ) continue;
                 $status = @$course['status'] ? $course['status'] : RecordUserCourseProgress::PENDING;
                 switch( $status ) {

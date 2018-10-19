@@ -32,6 +32,9 @@ WatchWebinarProgress::register();
 //CareMediaSelector::register();
 
 //Register the Statistics Widget
+ManagementReports::register();
+
+//Register the Statistics Widget
 Statistics_Dashboard_Widget::register();
 
 /**

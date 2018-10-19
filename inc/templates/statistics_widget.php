@@ -65,3 +65,11 @@
     </tfoot>
     </table>
 </div>
+<div>
+    <p><strong>Members participating in Mentorship: 
+    <?php
+        $stats = self::getMentorshipStatistics( $startDate );
+        echo $stats 
+        ?>
+    </strong></p>
+</div>

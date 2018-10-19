@@ -125,9 +125,26 @@ class RecordUserMemberData
 		$user_id = $user->ID;
         $this->log->error_log( sprintf("%s: User id=%d and email=%s",$loc, $user_id, $user->user_email ));
 
-        $joinedMentorship = get_user_meta( $user_id, self::META_KEY, true );
-        if( $joinedMentorship !== 'yes') $joinedMentorship = 'no';
+        $dateJoined = get_user_meta( $user_id, self::META_KEY, true );
+        if( $dateJoined == 'no' || $dateJoined == 'yes' ) {
+            $joinedMentorship = $dateJoined;
+        }
+        elseif ($dateJoined == '') {
+            $joinedMentorship = 'no';
+        }
+        else {
+            $dateJoined = DateTime::createFromFormat("Y-m-d", $dateJoined );
+            if( $dateJoined === false ) {
+                $this->log->error_log( DateTime::getLastErrors(), "Error getting date joined mentorship");
+                $joinedMentorship = 'no';
+            }
+            else {
+                $joinedMentorship = 'yes';
+            }
+        }
         $this->log->error_log( $joinedMentorship, "$loc --> joined Mentorship" );
+        $this->log->error_log( $dateJoined, "$loc --> date joined Mentorship" );
+
 
         $label = __( "Did member join the mentorship program?", CARE_TEXTDOMAIN );
         $checked = $joinedMentorship === "yes" ? "checked" : "";
@@ -163,19 +180,29 @@ EOT;
             $joinedMentorship = 'yes'; //$_GET['pass_mentorship'];
         }
 
-        $meta_id = update_user_meta( $userId, self::META_KEY, $joinedMentorship );
-        if( true === $meta_id ) {
-            $mess = sprintf("Updated mentorship=%s.", $joinedMentorship);
+        $dateJoined = '';
+        if( 'yes' === $joinedMentorship ) {
+            $dateJoined = (new DateTime())->format('Y-m-d');
         }
-        elseif( is_numeric( $meta_id ) ) {
-            $mess = sprintf("Added mentorship=%s. (Meta id=%d)", $joinedMentorship, $meta_id );
+
+        if( 'yes' === $joinedMentorship ) {
+            $meta_id = update_user_meta( $userId, self::META_KEY, $dateJoined );
+            if( true === $meta_id ) {
+                $mess = sprintf("Updated mentorship=%s; joined on '%s'", $joinedMentorship, $dateJoined);
+            }
+            elseif( is_numeric( $meta_id ) ) {
+                $mess = sprintf("Added mentorship=%s; joined on '%s'. (Meta id=%d)", $joinedMentorship, $dateJoined, $meta_id );
+            }
+            elseif( false === $meta_id ) {
+                $mess = "Mentorship was not added/updated.";
+            }
         }
-        elseif( false === $meta_id ) {
-            $mess = "Mentorship was not added/updated.";
+        else {
+            delete_user_meta( $userId, self::META_KEY );
+            $mess = 'deleted';
         }
 
         $this->log->error_log( $mess, $loc );
-        $_SESSION[self::SESSION_MESSAGE_KEY] = $mess;
 
         return;
     }

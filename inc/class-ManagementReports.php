@@ -45,7 +45,7 @@ class ManagementReports
         $this->hooks = array( 'management-reports' );
         $this->roles = array( 'um_admin', 'administrator' );
 
-        $this->log = new BaseLogger( false );
+        $this->log = new BaseLogger( true );
     }
 
     public function registerScript( $hook ) {
@@ -117,6 +117,9 @@ class ManagementReports
         wp_reset_postdata();
         wp_reset_query();
         
+        $selection .= '<optgroup label="Mentorship">';
+        $selection .= sprintf( $tmpl, RecordUserMemberData::META_KEY . ':' . '1', 'Joined Mentorship' );
+        
         $selection .= "</select>";
 
         $out = "<table class='management-report'>";
@@ -163,7 +166,7 @@ class ManagementReports
             $report = $_POST['id'];
         }
         else {
-            $this->errobj->add( $this->errcode++, __( 'Webinar or Course not selected.', CARE_TEXTDOMAIN ));
+            $this->errobj->add( $this->errcode++, __( 'Report type was not selected.', CARE_TEXTDOMAIN ));
         }
         
         //Get the start date
@@ -188,10 +191,23 @@ class ManagementReports
             $this->handleErrors("Errors were encountered");
         }
 
-        $postType = explode( ":", $report, 2 )[0];
+        $reportType = explode( ":", $report, 2 )[0];
         $id  = (integer) explode( ":", $report, 2 )[1];
 
-        $result = $this->mgmtReport( $id, $postType, $startDate, $endDate );
+        $this->log->error_log("$loc --> Report Type: $reportType; Id: $id");
+        
+        $result = array();
+        switch($reportType) {
+            case Course::CUSTOM_POST_TYPE:
+                $result = $this->courseWebinarReport( $id, RecordUserCourseProgress::META_KEY, $startDate, $endDate );
+                break;
+            case Webinar::CUSTOM_POST_TYPE:
+                $result = $this->courseWebinarReport( $id, RecordUserWebinarProgress::META_KEY, $startDate, $endDate );
+                break;
+            case RecordUserMemberData::META_KEY:
+                $result = $this->memberDataReport( $id, RecordUserMemberData::META_KEY, $startDate, $endDate );
+            break;
+        }
 
 
         $response = array();
@@ -203,34 +219,12 @@ class ManagementReports
 
     }
     
-	private function mgmtReport($id, $reportType, $startDate = '1970-01-01', $endDate = '2299-01-01')
+	private function courseWebinarReport($id, $metaKey, $startDate = '1970-01-01', $endDate = '2299-01-01')
     {
         $loc = __CLASS__ . '::' . __FUNCTION__;
-        $this->log->error_log( "$loc --> $id, $reportType, $startDate, $endDate" );
+        $this->log->error_log( "$loc($id, $metaKey, $startDate, $endDate)" );
 
-        $metaKey = '';
-        switch($reportType) {
-            case Course::CUSTOM_POST_TYPE:
-                $metaKey = RecordUserCourseProgress::META_KEY;
-                break;
-            case Webinar::CUSTOM_POST_TYPE:
-                $metaKey = RecordUserWebinarProgress::META_KEY;
-                break;
-        }
-
-        $this->log->error_log("Meta key is '$metaKey'");
-        global $wpdb;
-        $sql = "SELECT u.display_name as username
-                        , m.umeta_id as meta_id
-                        , m.meta_key
-                        , m.meta_value as val
-                FROM {$wpdb->prefix}usermeta m
-                INNER JOIN {$wpdb->prefix}users u on u.ID = m.user_id
-                where meta_key = '%s' ";
-        $query = $wpdb->prepare( $sql, $metaKey );
-        $result = $wpdb->get_results( $query, ARRAY_A );
-      
-        $this->log->error_log($result, "Query results:");
+        $result = $this->queryUsereMeta( $metaKey );
 
         $start = DateTime::createFromFormat('Y-m-d', $startDate );
         $end   = DateTime::createFromFormat('Y-m-d', $endDate );
@@ -273,7 +267,81 @@ class ManagementReports
 
         return $retval;
     }
+    
+	private function memberDataReport($id, $metaKey, $startDate = '1970-01-01', $endDate = '2299-01-01')
+    {
+        $loc = __CLASS__ . '::' . __FUNCTION__;
+        $this->log->error_log( "$loc($id, $metaKey, $startDate, $endDate)" );
+
+        $result = $this->queryUsereMeta( $metaKey );
+
+        $start = DateTime::createFromFormat('Y-m-d', $startDate );
+        $end   = DateTime::createFromFormat('Y-m-d', $endDate );
+        $this->log->error_log($start, "$loc --> Start date string: $startDate");
+        $this->log->error_log($end, "$loc --> End date string: $endDate");
+        
+        $ctr = 0;
+        $memberName = '';
+        $retval = array();
+        foreach( $result as $meta ) {
+            ++$ctr;
+            $memberName = $meta['username'];
+            $meta_id = $meta['meta_id'];
+            $strDate = maybe_unserialize( $meta['val'] );
+            $this->log->error_log( $strDate, "$ctr. Member '{$memberName}' Meta id={$meta_id}" );
+
+            $joinedMentorship = false;
+            $dateJoined = DateTime::createFromFormat('Y-m-d', $strDate );
+            if( false === $dateJoined ) {
+                $dateJoined = DateTime::createFromFormat('d-m-Y', $strDate);
+                if( false === $dateJoined ) {
+                    $dateJoined = '';
+                }
+                else {
+                    $showStart = $dateJoined->format('Y-m-d');
+                    $joinedMentorship = true;
+                    $this->log->error_log("Report date: $startDate; Joined Mentorship on: {$showStart}");
+                }
+            }
+            else {
+                $showStart = $dateJoined->format('Y-m-d');
+                $joinedMentorship = true;
+                $this->log->error_log("Report date: $startDate; Joined Mentorship on: {$showStart}");
+            }
+
+            if( $joinedMentorship && ($dateJoined >= $start && $dateJoined <= $end) ) {
+                $status = 'n/a';
+                array_push($retval, array($memberName, $dateJoined->format('Y-m-d'), $status) );
+            }
+
+        }
+
+        return $retval;
+    }
  
+    /**
+     * Query the user meta table
+     */
+    private function queryUsereMeta( $metaKey ) {
+        $loc = __CLASS__ . '::' . __FUNCTION__;
+
+        global $wpdb;
+        $sql = "SELECT u.display_name as username
+                        , m.umeta_id as meta_id
+                        , m.meta_key
+                        , m.meta_value as val
+                FROM {$wpdb->prefix}usermeta m
+                INNER JOIN {$wpdb->prefix}users u on u.ID = m.user_id
+                where meta_key = '%s' ";
+        $query = $wpdb->prepare( $sql, $metaKey );
+        $result = $wpdb->get_results( $query, ARRAY_A );
+      
+        $this->log->error_log($result, "Query results:");
+
+        return $result;
+
+    }
+
     /**
      * Get the AJAX data that WordPress needs to output.
      *

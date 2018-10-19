@@ -270,7 +270,71 @@ class Statistics_Dashboard_Widget {
         error_log( print_r( $retval, true ) );
 
 		return $retval;
-	}
+    }
+    
+    public static function getMentorshipStatistics( $startDate ) {
+
+        $loc = __CLASS__ . '::' . __FUNCTION__;
+        error_log( $loc );
+
+        global $wpdb;
+        $sql = "SELECT u.display_name as username
+                        , m.umeta_id as meta_id
+                        , m.meta_key
+                        , m.meta_value as val
+                FROM {$wpdb->prefix}usermeta m
+                INNER JOIN {$wpdb->prefix}users u on u.ID = m.user_id
+                where meta_key = '%s' ";
+        $query = $wpdb->prepare( $sql, RecordUserMemberData::META_KEY );
+        $result = $wpdb->get_results( $query, ARRAY_A );
+
+        $start = DateTime::createFromFormat('Y-m-d', $startDate );
+        error_log( print_r( $start, true ) );
+        $numInMentorship = 0;
+
+        $ctr = 0;
+        $memberName = '';
+        $retval = array();
+        error_log("Each query result:");
+        foreach( $result as $meta ) {
+            ++$ctr;
+            $memberName = $meta['username'];
+            $meta_id = $meta['meta_id'];
+            $strDate = maybe_unserialize( $meta['val'] );
+            error_log("$ctr. Member '{$memberName}' Meta id={$meta_id}" );
+            error_log( print_r( $strDate, true ) );
+
+            $joinedMentorship = false;
+            $dateJoined = DateTime::createFromFormat('Y-m-d', $strDate );
+            if( false === $dateJoined ) {
+                $dateJoined = DateTime::createFromFormat('d-m-Y', $strDate);
+                if( false === $dateJoined ) {
+                    $dateJoined = '';
+                }
+                else {
+                    $showStart = $dateJoined->format('Y-m-d');
+                    $joinedMentorship = true;
+                    error_log("Report date: $startDate; Joined Mentorship on: {$showStart}");
+                }
+            }
+            else {
+                $showStart = $dateJoined->format('Y-m-d');
+                $joinedMentorship = true;
+                error_log("Report date: $startDate; Joined Mentorship on: {$showStart}");
+            }
+
+            if( $joinedMentorship && $dateJoined >= $start ) {
+                ++$numInMentorship;
+            }
+            else {
+                $showJoined = $dateJoined->format('Y-m-d');
+                error_log("NOT COUNTED! $joinedMentorship $showJoined");
+            }
+
+        }
+
+        return $numInMentorship;
+    }
 
 
 }

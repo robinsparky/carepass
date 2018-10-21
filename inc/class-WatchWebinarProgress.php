@@ -21,6 +21,8 @@ class WatchWebinarProgress
     const ACTION   = 'watchWebinarProgess';
     const NONCE    = 'watchWebinarProgess';
 
+    const PCT_COMPLETE_OPTION_NAME = 'pass_webinar_pct_complete';
+
     private $ajax_nonce = null;
     private $errobj = null;
     private $errcode = 0;
@@ -122,7 +124,8 @@ class WatchWebinarProgress
         }
 
         $webinar['status'] = RecordUserWebinarProgress::PENDING;
-        if( 0.85 <= $webinar['watchedPct'] ) {
+        $completionPercent = get_option(self::PCT_COMPLETE_OPTION_NAME, 85);
+        if( ($completionPercent/100.0) <= $webinar['watchedPct'] ) {
             $webinar['status'] = RecordUserWebinarProgress::COMPLETED;
         }
         $this->log->error_log( $webinar, "Watched Webinar" );

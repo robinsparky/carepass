@@ -23,7 +23,7 @@
 function care_admin_page() {
     //Generate MCI admin page
     add_menu_page( 'PASS Admin Options' //title
-                 , 'PASS' //menu name
+                 , 'PASS Settings' //menu name
                  , 'manage_options' //capabilities required of user
                  , 'carepass' //slug
                  , 'care_theme_create_page' // function to create page
@@ -41,13 +41,13 @@ function care_admin_page() {
     );
     
     //Generate admin sub pages -- first one must mirror the main menu page
-    add_submenu_page( 'carepass' //parent slug
-                    , 'PASS Dashboard Options' //page title
-                    , 'Dashboard' // menu title
-                    , 'manage_options' //capabilities
-                    , 'carepass_dashboard' // menu slug
-                    , 'care_theme_dashboard_page' //callback
-    );
+    // add_submenu_page( 'carepass' //parent slug
+    //                 , 'PASS Dashboard Options' //page title
+    //                 , 'Dashboard' // menu title
+    //                 , 'manage_options' //capabilities
+    //                 , 'carepass_dashboard' // menu slug
+    //                 , 'care_theme_dashboard_page' //callback
+    //);
 
     add_action( 'admin_init', 'care_custom_settings' );
 }
@@ -60,14 +60,14 @@ function care_theme_create_page() {
     require_once get_stylesheet_directory() . '/inc/templates/pass-settings.php';
 }
 
-function care_theme_dashboard_page() {
-    //generation of our admin sub page
-    require_once get_stylesheet_directory() . '/inc/templates/pass-dashboard.php';
-}
+// function care_theme_dashboard_page() {
+//     //generation of our admin sub page
+//     require_once get_stylesheet_directory() . '/inc/templates/pass-dashboard.php';
+// }
 
 function care_custom_settings() {
     register_setting( 'care-settings-group' //Options group
-                    , 'care_courses_password' //Option name
+                    , 'pass_webinar_pct_complete' //Option name
                     //, '' //sanitize call back
                     );
     register_setting( 'care-settings-group' //Options group
@@ -81,9 +81,9 @@ function care_custom_settings() {
                         , 'carepass' //page
                     );
     
-    add_settings_field( 'courses-password' // id
-                      , 'Course Lock Word' // title
-                      , 'courses_password' // callback
+    add_settings_field( 'webinar-percent-complete' // id
+                      , 'Webinar Completion Percentage' // title
+                      , 'webinarPercentComplete' // callback
                       , 'carepass' // page
                       , 'care-course-options' // section
                       //,  array of args
@@ -96,7 +96,7 @@ function care_custom_settings() {
                     );
     add_settings_field( 'posts-per-page' // id
                       , 'Webinars Per Page' // title
-                      , 'webinars_per_page' // callback
+                      , 'webinarsPerPage' // callback
                       , 'carepass' // page
                       , 'care-display-options' // section
                       //,  array of args
@@ -110,14 +110,15 @@ function care_webinars_page_size_option() {
     echo "Manage your Display Options";
 }
 
-function courses_password() {
-    $pass = esc_attr( get_option('care_courses_password') );
-    echo '<input type="text" name="care_courses_password" value="' . $pass . '" />';
+function webinarPercentComplete() {
+    $pctCompleteFactor = esc_attr( get_option('pass_webinar_pct_complete', 85) );
+    echo '<input type="number" placeholder="Min: 10.0, max: 100.0"
+    min="10.0" max="100.0" step="1" name="pass_webinar_pct_complete" value="' . $pctCompleteFactor . '" /><p>Max 100 and at least 10. Default is 85</p>';
 }
 
-function webinars_per_page() {
+function webinarsPerPage() {
     $pagesize = esc_attr( get_option('care_webinars_page_size') );
-    echo '<input type="text" name="care_webinars_page_size" value="' . $pagesize . '" /><p>Max 1000 and not negative</p>';
+    echo '<input type="number" min="1" max="1000" placeholder="Min: 1, max: 1000" step="1" name="care_webinars_page_size" value="' . $pagesize . '" /><p>Max 1000 and not negative</p>';
 }
 
 function sanitize_page_size( $input ) {

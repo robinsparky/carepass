@@ -326,11 +326,6 @@ class Statistics_Dashboard_Widget {
             if( $joinedMentorship && $dateJoined >= $start ) {
                 ++$numInMentorship;
             }
-            else {
-                $showJoined = $dateJoined->format('Y-m-d');
-                error_log("NOT COUNTED! $joinedMentorship $showJoined");
-            }
-
         }
 
         return $numInMentorship;

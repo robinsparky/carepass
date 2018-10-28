@@ -149,8 +149,9 @@ class WatchWebinarProgress
                     $found = true;
                     $prev['startDate'] = $webinar['startDate'];
                     $prev['endDate'] = $webinar['endDate'];
+                    $prev['watchedPct'] = $webinar['watchedPct'];
+                    $prev['location'] = $webinar['location'];
                     if( $prev['status'] != RecordUserWebinarProgress::COMPLETED ) {
-                        $prev['watchedPct'] = $webinar['watchedPct'];
                         $prev['status'] = $webinar['status'];
                     }
                 }

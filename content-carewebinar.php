@@ -6,12 +6,12 @@
 				 appointment_post_thumbnail('','img-responsive');
 				 appointment_post_meta_content();
 				 $ok = false;
+				 //Only current members can view a webinar
 				 if (is_user_logged_in()) {
 					 $currentUser = wp_get_current_user();
 					 error_log( print_r($currentUser->roles, true ) );
 					 if( in_array('um_member', $currentUser->roles )) {
 						 $ok = true;
-						 error_log($ok);
 					 }
 				 }
 				 $postid = get_the_ID();

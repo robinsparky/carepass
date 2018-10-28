@@ -216,14 +216,14 @@ EOT;
                 $row = sprintf( $templ
                               , $webinar['id']
                               , $webinar['name']
-                              , isset($webinar["startDate"]) ? $webinar["startDate"] : '1970-01-01'
+                              , !empty($webinar["startDate"]) ? $webinar["startDate"] : '1970-01-01'
                               , $select
                               , $remove );
                 $out .= $row;
                 $val = sprintf("%d|%s|%s|%s"
                               , $webinar['id']
                               , $webinar['name']
-                              , isset($webinar["startDate"]) ? $webinar["startDate"] : '1970-01-01'
+                              , !empty($webinar["startDate"]) ? $webinar["startDate"] : '1970-01-01'
                               , $st );
                 $hidden .= sprintf("<input type=\"hidden\" name=\"webinarreports[]\" value=\"%s\"/> ", $val );
             }

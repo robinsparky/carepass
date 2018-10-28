@@ -2,7 +2,7 @@
 
     $(document).ready(function() {       
         let sig = '#care-resultmessage';
-        console.log("Watch Webinar");
+        console.log("PASS Watch Webinar");
         console.log(care_watch_webinar_obj);
         //Assumes only one video in the page
         let video = document.querySelector("video");
@@ -102,7 +102,7 @@
             if (month.length < 2) month = '0' + month;
             if (day.length < 2) day = '0' + day;
         
-            return [day, month, year].join('-');
+            return [year, month, day].join('-');
         }
 
 
@@ -145,12 +145,14 @@
 
         video.addEventListener('ended', ajaxCaller);
 
-        window.addEventListener( 'beforeunload', function(e) { 
+        window.addEventListener( 'beforeunload', function(event) { 
+            event.preventDefault();
             if( !this.window.sentWebinarWatched && ((progress.length > 0) && progress.val() > 0.1) ) {
                 ajaxCaller();
             }
+            //chrome requires a return value
+            event.returnValue = '';
         });
-
 
     });
  })(jQuery);

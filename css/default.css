@@ -154,3 +154,7 @@ table.front_logos tfoot td {
     color: #000;
     width: 50%;
 }
+
+table.picker__table { 
+	background-color: inherit; /* #3ba1da; */
+}

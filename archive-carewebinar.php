@@ -6,7 +6,7 @@ get_header();  ?>
 			<div class="row">
 				<div class="col-md-6">
 					<div class="page-title"><h1>
-        <?php _e( "Webinars", 'care-mci' ); ?>
+        <?php _e( "Webinars", CARE_TEXTDOMAIN ); ?>
         <?php if( get_post_meta( get_the_ID(), 'post_description', true ) != '' ) { ?>
         <p><?php echo get_post_meta( get_the_ID(), 'post_description', true ) ; ?></p>
         <?php } ?>

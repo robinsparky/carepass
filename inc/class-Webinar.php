@@ -214,12 +214,8 @@ class Webinar extends BaseCustomMediaPostType {
 	public function getColumnValues( $column_name, $postID ) {
 		$loc = __CLASS__ . '::' . __FUNCTION__;
 		$this->log->error_log( $loc );
-
-		if( $column_name === 'webinar_curriculum' ){
-			$val = get_post_meta( $postID, self::CURRICULUM_META_KEY, TRUE );
-			echo $this->curriculum[$val];
-		}
-		elseif( $column_name === 'webinar_video' ){
+		
+		if( $column_name === 'webinar_video' ){
 			$url = get_post_meta( $postID, self::VIDEO_META_KEY, TRUE );
 			
 			if( @$url  ) {

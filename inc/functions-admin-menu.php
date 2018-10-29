@@ -132,7 +132,7 @@ function webinarPercentComplete() {
 
 function webinarWatchRoles() {
     $roleNames = array_keys( wp_roles()->roles );
-    $rolesWatch = esc_attr( get_option('care_roles_that_watch','um_member,um_caremember') );
+    $rolesWatch = esc_attr( get_option('care_roles_that_watch','um_caremember') );
     echo '<input type="text" size="60" name="care_roles_that_watch" value="' . $rolesWatch . '" />';
     echo '<p>Available roles:</p>';
     echo '<ul>';
@@ -159,6 +159,10 @@ function sanitize_page_size( $input ) {
 function sanitize_roles_csv( $input ) {
     $checkstr = sanitize_text_field( $input );
     $checkarr = str_getcsv( $checkstr, "," );
+    if( strpos( $checkstr, "," ) === false ) {
+        $checkarr = array( trim( $checkstr ) );
+    }
+    
     $output = array();
     $acceptableRoles = wp_roles()->roles;
     $keys = array_keys( $acceptableRoles );

@@ -220,11 +220,16 @@ EOT;
                               , $select
                               , $remove );
                 $out .= $row;
-                $val = sprintf("%d|%s|%s|%s"
+                $watchedPct = (float) (!empty($webinar['watchedPct']) ?  $webinar['watchedPct'] : 0.0);
+                if( $st === self::COMPLETED && $watchedPct === 0.0 ) $watchedPct = 1.0;
+                $val = sprintf("%d|%s|%s|%s|%s|%d|%s"
                               , $webinar['id']
                               , $webinar['name']
                               , !empty($webinar["startDate"]) ? $webinar["startDate"] : '1970-01-01'
-                              , $st );
+                              , !empty($webinar["endDate"]) ? $webinar["endDate"] : $webinar["startDate"] 
+                              , $st
+                              , $watchedPct 
+                              , !empty($webinar['location']) ? $webinar['location'] : 'unknown');
                 $hidden .= sprintf("<input type=\"hidden\" name=\"webinarreports[]\" value=\"%s\"/> ", $val );
             }
         }
@@ -271,9 +276,19 @@ EOT;
         return;
     }
 
+    /**
+     * Save the posted array of webinar statuses (histories) in the db
+     * @param $userId The id of the user whose webinars are being recorded
+     * @param $statusreports Is an array of 6 values: id, webinar name, startdate, enddate, status, watchedPct, location
+     */
     private function storeWebinarProgress( $userId, $statusreports ) {
         $loc = __CLASS__ . '::' . __FUNCTION__;
         $this->log->error_log( $loc );
+        
+        //Below is an example of the element giving the "statusreports" array
+        //<input name="webinarreports[]" 
+            //value="7211|Information Session|2018-10-28|2018-10-28|In Progress|0|unknown" 
+            //type="hidden">
         
         $webinars = array();
         $tracker = array();
@@ -286,14 +301,25 @@ EOT;
                 $webinar = array();
                 $webinar['id']        = $arr[0];
                 $webinar['name']      = $arr[1];
-                $date = DateTime::createFromFormat($format, $arr[2]);
-                if( false === $date ) {
+                $sdate = DateTime::createFromFormat($format, $arr[2]);
+                if( false === $sdate ) {
                     $this->log->error_log( DateTime::getLastErrors(), "Error processing start date" );
-                    $date = DateTime::createFromFormat($format, '1970-01-01');
+                    $sdate = DateTime::createFromFormat($format, '1970-01-01');
                 }
-                $this->log->error_log( $date->format( $format ), "Date: ");
-                $webinar["startDate"] = $date->format( $format );
-                $webinar['status']    = $arr[3];
+                $this->log->error_log( $sdate->format( $format ), "Start Date");
+                $webinar["startDate"] = $sdate->format( $format );
+                
+                $edate = DateTime::createFromFormat($format, $arr[3]);
+                if( false === $edate ) {
+                    $this->log->error_log( DateTime::getLastErrors(), "Error processing start date" );
+                    $edate = $sdate;
+                }
+                $this->log->error_log( $edate->format( $format ), "End Date");
+                $webinar["endDate"] = $edate->format( $format );
+
+                $webinar['status']    = $arr[4];
+                $webinar['watchedPct'] = (float)$arr[5];
+                $webinar['location'] = $arr[6];
                 array_push( $webinars, $webinar );
             }
         }

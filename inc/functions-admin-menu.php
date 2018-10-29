@@ -70,6 +70,12 @@ function care_custom_settings() {
                     , 'pass_webinar_pct_complete' //Option name
                     //, '' //sanitize call back
                     );
+
+    register_setting( 'care-settings-group' //Options group
+                    , 'care_roles_that_watch' //Option name used in get_option
+                    , 'sanitize_roles_csv' //sanitize call back
+                    );
+
     register_setting( 'care-settings-group' //Options group
                     , 'care_webinars_page_size' //Option name
                     , 'sanitize_page_size' //sanitize call back
@@ -88,6 +94,14 @@ function care_custom_settings() {
                       , 'care-course-options' // section
                       //,  array of args
                 );
+                    
+    add_settings_field( 'care-roles-that-watch' // id
+                    , 'Roles Allowed to Watch Webinars' // title
+                    , 'webinarWatchRoles' // callback
+                    , 'carepass' // page
+                    , 'care-course-options' // section
+                    //,  array of args
+                    );
                 
     add_settings_section( 'care-display-options' //id
                         , 'Display Options' //title
@@ -116,6 +130,18 @@ function webinarPercentComplete() {
     min="10.0" max="100.0" step="1" name="pass_webinar_pct_complete" value="' . $pctCompleteFactor . '" /><p>Max 100 and at least 10. Default is 85</p>';
 }
 
+function webinarWatchRoles() {
+    $roleNames = array_keys( wp_roles()->roles );
+    $rolesWatch = esc_attr( get_option('care_roles_that_watch','um_member,um_caremember') );
+    echo '<input type="text" size="60" name="care_roles_that_watch" value="' . $rolesWatch . '" />';
+    echo '<p>Available roles:</p>';
+    echo '<ul>';
+    foreach( $roleNames as $role ) {
+        echo '<li>' . $role . '</li>';
+    }
+    echo '</ul>';
+}
+
 function webinarsPerPage() {
     $pagesize = esc_attr( get_option('care_webinars_page_size') );
     echo '<input type="number" min="1" max="1000" placeholder="Min: 1, max: 1000" step="1" name="care_webinars_page_size" value="' . $pagesize . '" /><p>Max 1000 and not negative</p>';
@@ -128,5 +154,20 @@ function sanitize_page_size( $input ) {
         else $output = $input;
     }
     return $output;
+}
+
+function sanitize_roles_csv( $input ) {
+    $checkstr = sanitize_text_field( $input );
+    $checkarr = str_getcsv( $checkstr, "," );
+    $output = array();
+    $acceptableRoles = wp_roles()->roles;
+    $keys = array_keys( $acceptableRoles );
+    foreach( $checkarr as $roleName ) {
+        $roleName = trim( $roleName );
+        if( in_array( $roleName, $keys ) ) {
+            array_push( $output, $roleName );
+        }
+    }
+    return implode( ",", $output );
 }
 

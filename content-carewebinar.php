@@ -9,9 +9,13 @@
 				 //Only current members can view a webinar
 				 if (is_user_logged_in()) {
 					 $currentUser = wp_get_current_user();
-					 error_log( print_r($currentUser->roles, true ) );
-					 if( in_array('um_member', $currentUser->roles )) {
-						 $ok = true;
+					 $rolesWatch = esc_attr( get_option( 'care_roles_that_watch' ) );
+					 $rolesWatchArr = explode( ",", $rolesWatch );
+					 foreach( $rolesWatchArr as $roleName ) {
+						 if( in_array( $roleName, $currentUser->roles ) ) {
+							 $ok = true;
+							 break;
+						 }
 					 }
 				 }
 				 $postid = get_the_ID();

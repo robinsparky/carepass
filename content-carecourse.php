@@ -1,6 +1,6 @@
 <div id="post-<?php the_ID(); ?>" <?php post_class('blog-lg-area-left'); ?>>
 	<div class="media">						
-	<?php appointment_aside_meta_content(); ?>
+	<?php //appointment_aside_meta_content(); ?>
 		<div class="media-body">
 			<?php // Check Image size for fullwidth template
 				 appointment_post_thumbnail('','img-responsive');

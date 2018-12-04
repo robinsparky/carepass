@@ -57,7 +57,7 @@ get_header();  ?>
 						<p>Video Available: <?php echo $hasVideo ?></p>
 					</details>
                 </small>
-                <span> <?php echo the_content() ?> </span>
+                <span> <?php echo the_excerpt() ?> </span>
 
 				<?php endwhile;
 				// Previous/next page navigation.

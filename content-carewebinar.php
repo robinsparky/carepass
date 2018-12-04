@@ -1,6 +1,6 @@
 <div id="post-<?php the_ID(); ?>" <?php post_class('blog-lg-area-left'); ?>>
 	<div class="media">						
-	<?php appointment_aside_meta_content(); ?>
+	<?php //appointment_aside_meta_content(); ?>
 		<div class="media-body">
 			<?php // Check Image size for fullwidth template
 				 appointment_post_thumbnail('','img-responsive');
@@ -32,10 +32,6 @@
 				<?php 
 					if( $ok ) {
 				?>
-				<!-- <div style="text-align:center">
-					<progress class="webinar-progress" id="progress" value="0"></progress>
-				</div>
-					-->
 				<div class="webinar-buttons">
 					<button type="button" id="play">Play</button>
 					<!-- <button type="button" id="restart">Restart</button> -->
@@ -47,9 +43,22 @@
 
 				<ul class="webinar-controls">
 					<li><label for="progress">Progress</label><progress class="webinar-progress" id="progress" value="0"></progress></li>
-					<li><label for="seek-bar">Seek</label><input type="range" id="seek-bar" value="0"></li>
+					<li><label for="seek-bar">Seek</label><input type="range" id="seek-bar" value="0" list="webinar-tickmarks"></li>
 					<li><label for="volume-bar">Volume</label><input type="range" id="volume-bar"  max="1" step="0.1" value="1"></li>
 				</ul>
+				<datalist id="webinar-tickmarks">
+					<option value="0" label="0%">
+					<option value="10">
+					<option value="20">
+					<option value="30">
+					<option value="40">
+					<option value="50" label="50%">
+					<option value="60">
+					<option value="70">
+					<option value="80">
+					<option value="90">
+					<option value="100" label="100%">
+				</datalist>
 
 				<?php
 				}

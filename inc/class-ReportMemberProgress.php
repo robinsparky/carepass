@@ -145,6 +145,12 @@ EOT;
 
         $this->log->error_log( $loc );
         
+        if( !is_user_logged_in() ){
+            return '';
+        }
+        
+        if( !um_is_myprofile() ) return '';
+
         $currentuser = wp_get_current_user();
         if ( ! ( $currentuser instanceof WP_User ) ) {
             return '<h1>ET call home!</h1>';
@@ -162,10 +168,6 @@ EOT;
 
 		$myshorts = shortcode_atts( array("user_id" => 0), $atts, 'webinar_progress' );
         extract( $myshorts );
-        
-        if( !is_user_logged_in() ){
-            return "Member is not logged in!";
-        }
 
         $user_id = (int) $currentuser->ID;
         $this->log->error_log( sprintf("%s: User id=%d and email=%s",$loc, $user_id, $currentuser->user_email ));
@@ -234,6 +236,12 @@ EOT;
         $loc = __CLASS__ . '::' . __FUNCTION__;
 
         $this->log->error_log( $loc );
+
+        if( !is_user_logged_in() ) {
+            return '';
+        }
+        
+        if( !um_is_myprofile() ) return '';
         
         $currentuser = wp_get_current_user();
         if ( ! ( $currentuser instanceof WP_User ) ) {
@@ -253,9 +261,6 @@ EOT;
 		$myshorts = shortcode_atts( array("user_id" => 0), $atts, 'webinar_progress' );
         extract( $myshorts );
         
-        if( !is_user_logged_in() ){
-            return "Member is not logged in!";
-        }
 
         $user_id = (int) $currentuser->ID;
         $this->log->error_log( sprintf("%s: User id=%d and email=%s",$loc, $user_id, $currentuser->user_email ));

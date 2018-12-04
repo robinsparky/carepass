@@ -158,3 +158,23 @@ table.front_logos tfoot td {
 table.picker__table { 
 	background-color: inherit; /* #3ba1da; */
 }
+
+.webinar-progress {
+	width: 100%;
+}
+.webinar-buttons {
+	text-align: center;
+}
+.webinar-controls {
+	margin: 5px 5px 5px 5px;
+	list-style: none;
+	text-align: middle;
+}
+.webinar-controls li input[type="range"],
+.webinar-controls li progress {
+	display: inline-block;
+	width: 80%;
+	margin-left: 5px;
+	border: none;
+	height: 15px;
+}

@@ -105,15 +105,46 @@
             return [year, month, day].join('-');
         }
 
-
         let play = $('#play').on('click',function() { 
-            if(video.paused) video.play()
-            else video.pause();
+            if(video.paused) { 
+                video.play();
+                $(this).text("Pause")
+            }
+            else { 
+                video.pause();
+                $(this).text("Play")
+            }
         });
 
+        let fullScreen = $("#full-screen").on('click', function(e) {
+            if (video.requestFullscreen) {
+              video.requestFullscreen();
+            } else if (video.mozRequestFullScreen) {
+              video.mozRequestFullScreen(); // Firefox
+            } else if (video.webkitRequestFullscreen) {
+              video.webkitRequestFullscreen(); // Chrome and Safari
+            }
+        });
+
+
         let progress = $('#progress');
-        let restart  = $('#restart').on('click', function() {$(sig).html('');progress.val(0); video.load();} );
-        
+
+        // let restart  = $('#restart').on('click', function() {
+        //     $(sig).html('');
+        //     progress.val(0); 
+        //     video.load();
+        // } );
+            
+        let seekBar = $("#seek-bar").on('change', function(e) {
+            // Calculate the new time
+            let time = video.duration * (this.value / 100);
+            // Update the video time
+            video.currentTime = time;
+        }).on('mousedown', function(e) {
+            video.pause();
+        }).on('mouseup', function(e) {
+            video.play();
+        });
 
         video.addEventListener('timeupdate', function() {
                                                 if( isNaN(video.currentTime) || isNaN(video.duration)) {
@@ -124,24 +155,27 @@
                                                     let prog = video.currentTime / video.duration;
                                                     let pct = (100*prog).toFixed(2);
                                                     progress.val(prog);
-                                                    $(sig).html('<h2>' + pct + '%</h2>')
+                                                    //$(sig).html('<h2>' + pct + '%</h2>')
+                                                    // Update the slider value
+                                                    seekBar.val(prog);
                                                 }	
                                             });
-        let volume = $("#volume").on('change', function(e) {
-                        video.volume = e.currentTarget.value / 100;
+        let volume = $("#volume-bar").on('change', function(e) {
+                        video.volume = e.currentTarget.value;
                     });
+                
 
-        $("#makebig").on('click', function(e) { 
-            video.width = 800; 
-        });
+        // $("#makebig").on('click', function(e) { 
+        //     video.width = 800; 
+        // });
 
-        $("#makesmall").on('click', function(e) { 
-            video.width = 300; 
-        });
+        // $("#makesmall").on('click', function(e) { 
+        //     video.width = 300; 
+        // });
 
-        $("#makenormal").on('click', function(e) { 
-            video.width = 600; 
-        });
+        // $("#makenormal").on('click', function(e) { 
+        //     video.width = 600; 
+        // });
 
         video.addEventListener('ended', ajaxCaller);
 
@@ -149,9 +183,16 @@
             event.preventDefault();
             if( !this.window.sentWebinarWatched && ((progress.length > 0) && progress.val() > 0.1) ) {
                 ajaxCaller();
+                let retval = 'My special return value';
+                //chrome requires a return value
+                event.returnValue = retval;
+                console.log(retval);
+                return retval;
             }
-            //chrome requires a return value
-            event.returnValue = '';
+            else {
+                console.log("No return value!");
+                return;
+            }
         });
 
     });

@@ -32,20 +32,24 @@
 				<?php 
 					if( $ok ) {
 				?>
-				<div style="text-align:center">
-					<progress id="progress" value="0"></progress>
+				<!-- <div style="text-align:center">
+					<progress class="webinar-progress" id="progress" value="0"></progress>
 				</div>
-				<div style="text-align:center">
-					<button id="play">Play/Pause</button>
-					<button id="restart">Restart</button>
-					<button id="makebig">Big</button>
-					<button id="makesmall">Small</button>
-					<button id="makenormal">Normal</button>
+					-->
+				<div class="webinar-buttons">
+					<button type="button" id="play">Play</button>
+					<!-- <button type="button" id="restart">Restart</button> -->
+					<!-- <button type="button" id="makebig">Big</button>
+					<button type="button" id="makesmall">Small</button>
+					<button type="button" id="makenormal">Normal</button> -->
+					<button type="button" id="full-screen">Full-Screen</button>
 				</div>
 
-				<div style="text-align:center">
-					<div>Volume<input id="volume" type="range" width="25"></div>
-				</div>
+				<ul class="webinar-controls">
+					<li><label for="progress">Progress</label><progress class="webinar-progress" id="progress" value="0"></progress></li>
+					<li><label for="seek-bar">Seek</label><input type="range" id="seek-bar" value="0"></li>
+					<li><label for="volume-bar">Volume</label><input type="range" id="volume-bar"  max="1" step="0.1" value="1"></li>
+				</ul>
 
 				<?php
 				}

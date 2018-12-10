@@ -27,7 +27,6 @@ class RecordUserCourseProgress
 
     const TABLE_CLASS = 'course-status';
 
-    const SESSION_MESSAGE_KEY = 'coursereportmessage';
     const SEP = '|';
 
     private $ajax_nonce = null;
@@ -48,13 +47,6 @@ class RecordUserCourseProgress
         add_action('admin_enqueue_scripts', array( $handler, 'registerAdminScript' ) );
         
         $handler->registerHandlers();
-
-        //TODO: Remove session after code is debugged
-        if(session_id() == '') {
-            session_start();
-        }
-        // error_log("SESSION+++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-        // error_log( $_SESSION );
     }
 
 	/*************** Instance Methods ****************/
@@ -266,7 +258,7 @@ EOT;
         }
         $this->log->error_log( $coursereports, "Length of course reports=" . count( $coursereports ) );
 
-        $_SESSION[self::SESSION_MESSAGE_KEY] = $this->storeCourseProgress( $userId, $coursereports );
+        $this->storeCourseProgress( $userId, $coursereports );
 
         return;
     }
@@ -347,7 +339,6 @@ EOT;
         $this->log->error_log( $loc );
 
         $mess = "Greetings!";
-        if( isset( $_SESSION[self::SESSION_MESSAGE_KEY] ) ) $mess = $_SESSION[self::SESSION_MESSAGE_KEY] ;
         return array( 'tableclass' => self::TABLE_CLASS
                     , 'message' => $mess
                     , 'statusvalues' => $this->statuses

@@ -27,8 +27,6 @@ class RecordUserWebinarProgress
 
     const TABLE_CLASS = 'webinar-status';
 
-    const SESSION_MESSAGE_KEY = 'webinarreportmessage';
-
     private $ajax_nonce = null;
     private $errobj = null;
     private $errcode = 0;
@@ -46,13 +44,6 @@ class RecordUserWebinarProgress
         $handler = new self();
         add_action('admin_enqueue_scripts', array( $handler, 'registerAdminScript' ) );
         $handler->registerHandlers();
-        
-        //TODO: Remove session after code is debugged
-        if(session_id() == '') {
-            session_start();
-        }
-        // error_log("SESSION+++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-        // error_log( $_SESSION );
     }
 
 	/*************** Instance Methods ****************/
@@ -271,7 +262,7 @@ EOT;
 
         $this->log->error_log("Length of webinar reports=" . count( $webinarreports ) );
         $this->log->error_log( $webinarreports );
-        $_SESSION[self::SESSION_MESSAGE_KEY] = $this->storeWebinarProgress( $userId, $webinarreports );
+        $this->storeWebinarProgress( $userId, $webinarreports );
 
         return;
     }
@@ -372,7 +363,6 @@ EOT;
         $this->log->error_log( $loc );
 
         $mess = "Greetings!";
-        if( isset( $_SESSION[self::SESSION_MESSAGE_KEY] ) ) $mess = $_SESSION[self::SESSION_MESSAGE_KEY] ;
         return array( 'tableclass' => self::TABLE_CLASS
                     , 'message' => $mess
                     , 'statusvalues' => $this->statuses

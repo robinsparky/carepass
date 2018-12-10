@@ -16,8 +16,6 @@ class RecordUserMemberData
     const META_KEY   = "joined_mentorship";
     const TABLE_CLASS = 'member-data';
 
-    const SESSION_MESSAGE_KEY = 'memberdatamessage';
-
     private $errobj = null;
     private $errcode = 0;
 
@@ -35,12 +33,6 @@ class RecordUserMemberData
         add_action('admin_enqueue_scripts', array( $handler, 'registerAdminScript' ) );
         $handler->registerHandlers();
         
-        //TODO: Remove session after code is debugged
-        if(session_id() == '') {
-            session_start();
-        }
-        // error_log("SESSION+++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-        // error_log( $_SESSION );
     }
 
 	/*************** Instance Methods ****************/
@@ -218,7 +210,6 @@ EOT;
         $this->log->error_log( $loc );
 
         $mess = "Greetings!";
-        if( isset( $_SESSION[self::SESSION_MESSAGE_KEY] ) ) $mess = $_SESSION[self::SESSION_MESSAGE_KEY] ;
         return array( 'tableclass' => self::TABLE_CLASS
                     , 'message' => $mess
                    );

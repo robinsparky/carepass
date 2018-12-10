@@ -160,6 +160,12 @@
                                                     seekBar.val(prog);
                                                 }	
                                             });
+        
+
+        $('#volume-bar').on('input', function () {
+            $(this).trigger('change');
+        });
+
         let volume = $("#volume-bar").on('change', function(e) {
                         video.volume = e.currentTarget.value;
                     });

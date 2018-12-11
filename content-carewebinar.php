@@ -6,7 +6,7 @@
 				 appointment_post_thumbnail('','img-responsive');
 				 appointment_post_meta_content();
 				 $ok = false;
-				 //Only current members can view a webinar
+				 //Only roles defined in option called 'care_roles_that_watch' can view a webinar
 				 if (is_user_logged_in()) {
 					 $currentUser = wp_get_current_user();
 					 $rolesWatch = esc_attr( get_option( 'care_roles_that_watch' ) );
@@ -43,8 +43,8 @@
 
 				<ul class="webinar-controls">
 					<li><label for="progress">Progress</label><progress class="webinar-progress" id="progress" value="0"></progress></li>
-					<li><label for="seek-bar">Seek</label><input type="range" id="seek-bar" value="0" list="webinar-tickmarks"></li>
-					<li><label for="volume-bar">Volume</label><input type="range" id="volume-bar"  max="1" step="0.1" value="1"></li>
+					<li><label for="seek-bar">Seek</label><input type="range" id="seek-bar"  list="webinar-tickmarks"></li>
+					<li><label for="volume-bar">Volume</label><input type="range" id="volume-bar" min="0.0" max="1.0" step="0.1"></li>
 				</ul>
 				<datalist id="webinar-tickmarks">
 					<option value="0" label="0%">

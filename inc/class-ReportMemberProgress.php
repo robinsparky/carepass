@@ -36,8 +36,9 @@ class ReportMemberProgress
 
 	/*************** Instance Methods ****************/
 	public function __construct( ) {
-	    $this->errobj = new WP_Error();
-        $this->roles = array('um_member');
+	    $this->errobj = new WP_Error();		
+        $rolesWatch = esc_attr( get_option('care_roles_that_watch') );
+        $this->roles = explode( ",", $rolesWatch );
         $this->log = new BaseLogger( true );
     }
 
@@ -72,8 +73,8 @@ class ReportMemberProgress
 
         if(! $ok ) return '';
 
-		$myshorts = shortcode_atts( array("user_id" => 0), $atts, 'course_progress' );
-        extract( $myshorts );
+		// $myshorts = shortcode_atts( array("user_id" => 0), $atts, 'course_progress' );
+        // extract( $myshorts );
         
         if( !is_user_logged_in() ){
             return "Member is not logged in!";

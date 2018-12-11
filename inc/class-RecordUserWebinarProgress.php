@@ -50,8 +50,9 @@ class RecordUserWebinarProgress
 	public function __construct( ) {
         $this->errobj = new WP_Error();
         //Only emit on this page
-        $this->hooks = array( 'profile.php', 'user-edit.php' );
-        $this->roles = array( 'um_member' );
+        $this->hooks = array( 'profile.php', 'user-edit.php' );		
+        $rolesWatch = esc_attr( get_option('care_roles_that_watch') );
+        $this->roles = explode( ",", $rolesWatch );
         $this->statuses = array( self::PENDING, self::COMPLETED );
 
         $this->log = new BaseLogger( true );

@@ -52,8 +52,9 @@ class RecordUserCourseProgress
 	/*************** Instance Methods ****************/
 	public function __construct( ) {
         $this->errobj = new WP_Error();
-        $this->hooks = array( 'profile.php', 'user-edit.php' );
-        $this->roles = array('um_member');
+        $this->hooks = array( 'profile.php', 'user-edit.php' );		
+        $rolesWatch = esc_attr( get_option('care_roles_that_watch') );
+        $this->roles = explode( ",", $rolesWatch );
         $this->statuses = array( self::PENDING, self::COMPLETED );
 
         $this->log = new BaseLogger( true );

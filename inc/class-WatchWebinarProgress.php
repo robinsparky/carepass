@@ -45,8 +45,9 @@ class WatchWebinarProgress
 
 	/*************** Instance Methods ****************/
 	public function __construct( ) {
-	    $this->errobj = new WP_Error();
-        $this->roles = array( 'um_member' );
+	    $this->errobj = new WP_Error();		
+        $rolesWatch = esc_attr( get_option('care_roles_that_watch') );
+        $this->roles = explode( ",", $rolesWatch );
         $this->log = new BaseLogger( true );
     }
 

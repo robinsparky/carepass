@@ -363,7 +363,7 @@ EOT;
         $loc = __CLASS__ . '::' . __FUNCTION__;
         $this->log->error_log( $loc );
 
-        $mess = "Greetings!";
+        $mess = "";
         return array( 'tableclass' => self::TABLE_CLASS
                     , 'message' => $mess
                     , 'statusvalues' => $this->statuses

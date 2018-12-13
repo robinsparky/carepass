@@ -281,7 +281,7 @@ EOT;
         //<input name="webinarreports[]" 
             //value="7211|Information Session|2018-10-28|2018-10-28|In Progress|0|unknown" 
             //type="hidden">
-        
+        $this->log->error_log( $statusreports, "Status Reports Array" );
         $webinars = array();
         $tracker = array();
         $format = 'Y-m-d';
@@ -303,7 +303,7 @@ EOT;
                 
                 $edate = DateTime::createFromFormat($format, $arr[3]);
                 if( false === $edate ) {
-                    $this->log->error_log( DateTime::getLastErrors(), "Error processing start date" );
+                    $this->log->error_log( DateTime::getLastErrors(), "Error processing end date" );
                     $edate = $sdate;
                 }
                 $this->log->error_log( $edate->format( $format ), "End Date");

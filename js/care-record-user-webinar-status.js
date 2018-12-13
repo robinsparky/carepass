@@ -94,10 +94,11 @@
             //$statusCell.text(newStatus);
             arrVal = oldVal.split("|");
             arrVal[2] = newDate;
+            console.log("newVal=%s", arrVal.join("|"));
             $(selector).val(arrVal.join("|"));
        });
 
-        //Modify status of a row; index=3
+        //Modify status of a row; index=4
         $("table." + care_userprofile_webinar.tableclass).on("change", "#statusSelect", function(e) {
             console.log('webinar status select fired!');
             newStatus = e.target.options[e.target.selectedIndex].text;
@@ -110,7 +111,8 @@
             console.log("oldVal=%s", oldVal);
             //$statusCell.text(newStatus);
             arrVal = oldVal.split("|");
-            arrVal[3] = newStatus;
+            arrVal[4] = newStatus;
+            console.log("newVal=%s", arrVal.join("|"));
             $(selector).val(arrVal.join("|"));
        });
        

@@ -213,12 +213,17 @@ EOT;
                               , isset($course["startDate"]) ? $course["startDate"] : '1970-01-01'
                               , $select
                               , $remove );
-                $out .= $row;
-                $val = sprintf("%d|%s|%s|%s"
+                $out .= $row;                
+                $watchedPct = (float) (!empty($course['watchedPct']) ?  $course['watchedPct'] : 0.0);
+                if( $st === self::COMPLETED && $watchedPct === 0.0 ) $watchedPct = 1.0;
+                $val = sprintf("%d|%s|%s|%s|%s|%s|%s"
                               , $course['id']
                               , $course['name']
                               , isset($course["startDate"]) ? $course["startDate"] : '1970-01-01'
-                              , $st );
+                              , isset($course["endDate"]) ? $course["endDate"] : '1970-01-01'
+                              , $st
+                              , $watchedPct 
+                              , !empty($course['location']) ? $course['location'] : 'unknown' );
                 $hidden .= sprintf("<input type=\"hidden\" name=\"coursereports[]\" value=\"%s\"> ", $val );
             }
         }
@@ -268,6 +273,10 @@ EOT;
         $loc = __CLASS__ . '::' . __FUNCTION__;
         $this->log->error_log( $loc );
 
+        //Below is an example of the element giving the "statusreports" array
+        //<input name="webinarreports[]" 
+            //value="7211|Information Session|2018-10-28|2018-10-28|In Progress|0|unknown" 
+            //type="hidden">
         $courses = array();
         $tracker = array();
         $format = 'Y-m-d';
@@ -286,7 +295,16 @@ EOT;
                 }
                 $this->log->error_log($date->format( $format ), "Date" );
                 $course["startDate"] = $date->format( $format );
-                $course['status']    = $arr[3];
+                
+                $edate = DateTime::createFromFormat($format, $arr[3]);
+                if( false === $edate ) {
+                    $this->log->error_log( DateTime::getLastErrors(), "Error processing end date" );
+                    $edate = $sdate;
+                }
+                $this->log->error_log( $edate->format( $format ), "End Date");
+                $course['status']    = $arr[4];
+                $course['watchedPct'] = (float)$arr[5];
+                $course['location'] = $arr[6];
                 array_push( $courses, $course );
             }
         }
@@ -320,6 +338,7 @@ EOT;
                 }
 
             }
+
             if( false === $meta_id ) {
                 $mess = "Course progress reports were not added/updated.";
             }

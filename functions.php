@@ -75,33 +75,6 @@ function care_get_current_template( $echo = false ) {
         return $GLOBALS['care_current_theme_template'];
 }
 
-/* 
-   ===========================================
-	Function to display taxonomy/tag links
-   ===========================================
-*/
-function care_mci_get_term_links( $postID, $termname ) {
-	$term_list = wp_get_post_terms( $postID, $termname ); 
-	$i = 0;
-	$len = count($term_list);
-	foreach($term_list as $term ) {
-		if( $i++ >= 0 && $i < $len) {
-			$sep = ',';
-		}
-		else if( $i >= $len ) {
-			$sep = '';
-		}
-		$lnk = get_term_link( $term );
-		if( is_wp_error( $lnk ) ) {
-			$mess = $lnk->get_error_message();
-			echo "<span>$mess</span>$sep";
-		}
-		else {
-			echo "<a href='$lnk'>$term->name</a>$sep";
-		}
-	}
-}
-
 //Just for dev
 add_filter( 'auth_cookie_expiration', 'keep_me_logged_in_for_1_year' );
 

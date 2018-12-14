@@ -43,11 +43,11 @@ get_header();  ?>
 					
 					$price = get_post_meta( get_the_ID(), Course::PRICE_META_KEY, true );
 					$duration = get_post_meta( get_the_ID(), Course::DURATION_META_KEY, true );
+					$duration = !empty( $duration ) ? $duration : 0;
 					$needsApproval = get_post_meta( get_the_ID(), Course::NEEDS_APPROVAL_META_KEY, true );
 					$instructions = $needsApproval === 'yes' ? 'Note: Requires case manager approval' : '';
 					?>
 					<div class="course-meta" style="float:right">
-					<span>Price: $<?php echo $price ?></span>
 					&nbsp;<span>Duration: <?php echo $duration ?> hours</span>
 					&nbsp;<span><?php echo $instructions ?></span>
 					</div>

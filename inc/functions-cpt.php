@@ -86,7 +86,7 @@ function archive_carecourse_query( $query ) {
 							)
 					);
 
-		$query->set( 'tax_query', $tax_query );
+		//$query->set( 'tax_query', $tax_query );
 		$query->set( 'orderby', 'title' );
 		$query->set( 'order', 'ASC' );
 		$query->set( 'posts_per_page', $courses_per_page );
@@ -95,7 +95,7 @@ function archive_carecourse_query( $query ) {
 add_action( 'pre_get_posts', 'archive_carecourse_query' );
 
 /**
- * Customize the Query for Care/PASS Webinar Archives
+ * Customize the Query for PASS Webinar Archives
  * @param object $query data
  *
  */
@@ -116,7 +116,7 @@ function archive_carewebinar_query( $query ) {
 							)
 					);
 
-		$query->set( 'tax_query', $tax_query );
+		//$query->set( 'tax_query', $tax_query );
 		$query->set( 'orderby', 'title' );
 		$query->set( 'order', 'ASC' );
 		$query->set( 'posts_per_page', $webinars_per_page );
@@ -142,3 +142,30 @@ function taxonomy_carecourse_query( $query ) {
 	}
 }
 add_action( 'pre_get_posts', 'taxonomy_carecourse_query' );
+
+/* 
+   ===========================================
+	Function to display taxonomy/tag links
+   ===========================================
+*/
+function care_mci_get_term_links( $postID, $termname ) {
+	$term_list = wp_get_post_terms( $postID, $termname ); 
+	$i = 0;
+	$len = count($term_list);
+	foreach($term_list as $term ) {
+		if( $i++ >= 0 && $i < $len) {
+			$sep = ',';
+		}
+		else if( $i >= $len ) {
+			$sep = '';
+		}
+		$lnk = get_term_link( $term );
+		if( is_wp_error( $lnk ) ) {
+			$mess = $lnk->get_error_message();
+			echo "<span>$mess</span>$sep";
+		}
+		else {
+			echo "<a href='$lnk'>$term->name</a>$sep";
+		}
+	}
+}

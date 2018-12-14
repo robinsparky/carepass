@@ -4,7 +4,7 @@
 		<div class="media-body">
 			<?php // Check Image size for fullwidth template
 				 appointment_post_thumbnail('','img-responsive');
-				 appointment_post_meta_content();
+				 //appointment_post_meta_content();
 				 $ok = false;
 				 //Only roles defined in option called 'care_roles_that_watch' can view a webinar
 				 if (is_user_logged_in()) {

@@ -30,10 +30,8 @@ get_header();  ?>
 			<!-- Blog Area -->
 			<div class="<?php appointment_post_layout_class(); ?>" >
 			<?php
-                $args = array( 'posts_per_page' => '10', 'post_type' => 'carecourse', 'coursecategory'  => 'course' ); 
-                $loop = new WP_Query( $args ); 
-                while ( $loop->have_posts() ) : 
-                    $loop->the_post();
+                while ( have_posts() ) : 
+                    the_post();
                     global $more;
                     $more = 0; 
                 ?>

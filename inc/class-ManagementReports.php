@@ -87,7 +87,7 @@ class ManagementReports
         $tmpl = '<option value="%s">%s</option>';
 
         $selection = '<select id="report-select">';
-        //$selection .= '<option value="0" selected="selected">' . $select_title . '</option>';
+        $selection .= '<option value="0" selected="selected">' . $select_title . '</option>';
         
         $selection .= '<optgroup label="Webinars">';
         $args = array( 'post_type' => Webinar::CUSTOM_POST_TYPE, 'posts_per_page' => -1, 'orderby'=>'title', 'order'=>'ASC' ); 
@@ -116,18 +116,21 @@ class ManagementReports
         // Reset Post Data 
         wp_reset_postdata();
         wp_reset_query();
-        
+
         $selection .= '<optgroup label="Mentorship">';
         $selection .= sprintf( $tmpl, RecordUserMemberData::META_KEY . ':' . '1', 'Joined Mentorship' );
         
         $selection .= "</select>";
 
+        $curYear = (new DateTime())->format("Y");
+        $startParam = $curYear . "-01-01";
+        $endParam   = $curYear . "-12-31";
         $out = "<table class='management-report'>";
         $out .= "<thead><th>Select Report</th><th>Starting</th><th>Ending</th></thead>";
         $out .= "<tbody>";
         $out .= "<tr><td>$selection</td>";
-        $out .= "<td><input type='date' id='report_start' name='report_start' value='2018-1-1'></td>";
-        $out .= "<td><input type='date' id='report_end' name='report_end' value='2018-12-31'></td>";
+        $out .= "<td><input type='date' id='report_start' name='report_start' value='$startParam'></td>";
+        $out .= "<td><input type='date' id='report_end' name='report_end' value='$endParam'></td>";
         $out .= "<td><button id='pass_get_report' name='pass_get_report' type='button'>Run</button>";
         $out .= " <button id='pass_clear_report' name='pass_clear_report' type='button'>Clear</button></td>";
         $out .= "</tr></tbody></table>";

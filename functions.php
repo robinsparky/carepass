@@ -75,7 +75,69 @@ function care_get_current_template( $echo = false ) {
         return $GLOBALS['care_current_theme_template'];
 }
 
-//Just for dev
+/*
+   ===================================================
+   Functions to add sortable ID and registration date
+   to list of users
+   ===================================================
+ */
+function care_modify_user_table( $column ) {
+    // $column['id'] = 'ID';
+    // return $column;
+    
+    $new = array();
+    foreach($column as $key => $title) {
+        if ($key == 'username') { 
+            $new['user_id'] = 'ID'; // Our custom column’s identifier and text
+            $new['registered'] = 'Registered';
+        }
+        $new[$key] = $title;
+    }
+    return $new;
+}
+add_filter( 'manage_users_columns', 'care_modify_user_table' );
+
+
+function care_modify_user_sortable( $columns ) {
+    $columns['user_id'] = 'ID';
+    //$columns['registered'] = 'Registered';
+
+    return $columns;
+}
+add_filter( 'manage_users_sortable_columns', 'care_modify_user_sortable' );
+
+function new_modify_user_table_row( $val, $column_name, $user_id ) {
+    
+	$date_format = 'j M, Y H:i';
+    switch ($column_name) {
+        case 'user_id' :
+            return $user_id;
+            break;
+        case 'registered':
+            $udata = get_userdata( $user_id );
+            $registered = $udata->user_registered;
+            return  date( $date_format, strtotime( $registered ) );
+            break;
+        default:
+    }
+    return $val;
+}
+add_filter( 'manage_users_custom_column', 'new_modify_user_table_row', 10, 3 );
+
+/**
+ * Set column width
+ */
+function care_user_id_column_style() {
+	echo "<style>.column-user_id{width: 5%}</style>";
+}
+add_action('admin_head-users.php', 'care_user_id_column_style');
+
+/*
+   ====================
+   Just for dev
+   REMOVE when live
+   ====================
+*/
 add_filter( 'auth_cookie_expiration', 'keep_me_logged_in_for_1_year' );
 
 function keep_me_logged_in_for_1_year( $expirein ) {

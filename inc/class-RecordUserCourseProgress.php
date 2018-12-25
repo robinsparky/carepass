@@ -26,6 +26,8 @@ class RecordUserCourseProgress
     const REGISTERED = "Registered";
 
     const TABLE_CLASS = 'course-status';
+    
+    const DEFAULT_LOCATION = 'unknown';
 
     const SEP = '|';
 
@@ -223,7 +225,7 @@ EOT;
                               , isset($course["endDate"]) ? $course["endDate"] : '1970-01-01'
                               , $st
                               , $watchedPct 
-                              , !empty($course['location']) ? $course['location'] : 'unknown' );
+                              , !empty($course['location']) ? $course['location'] : self::DEFAULT_LOCATION );
                 $hidden .= sprintf("<input type=\"hidden\" name=\"coursereports[]\" value=\"%s\"> ", $val );
             }
         }
@@ -288,7 +290,7 @@ EOT;
                 $course = array();
                 $course['id']        = $arr[0];
                 $course['name']      = $arr[1];
-                $date = DateTime::createFromFormat($format, $arr[2]);
+                $date = DateTime::createFromFormat( $format, $arr[2] );
                 if( false === $date ) {
                     $this->log->error_log( DateTime::getLastErrors(), "Error processing start date" );
                     $date = DateTime::createFromFormat($format, '1970-01-01');
@@ -296,15 +298,16 @@ EOT;
                 $this->log->error_log($date->format( $format ), "Date" );
                 $course["startDate"] = $date->format( $format );
                 
-                $edate = DateTime::createFromFormat($format, $arr[3]);
+                $edate = DateTime::createFromFormat( $format, $arr[3] );
                 if( false === $edate ) {
                     $this->log->error_log( DateTime::getLastErrors(), "Error processing end date" );
-                    $edate = $sdate;
+                    $edate = $date;
                 }
-                $this->log->error_log( $edate->format( $format ), "End Date");
-                $course['status']    = $arr[4];
+                $this->log->error_log( $edate->format( $format ), "End Date" );
+                $st = isset( $arr[4] ) ? $arr[4] : self::PENDING;
+                $course['status']    = $st;
                 $course['watchedPct'] = (float)$arr[5];
-                $course['location'] = $arr[6];
+                $course['location'] = isset( $arr[6] ) ? $arr[6] : self::DEFAULT_LOCATION;
                 array_push( $courses, $course );
             }
         }

@@ -117,33 +117,27 @@ class RecordUserMemberData
 
 		$user_id = $user->ID;
         $this->log->error_log( sprintf("%s: User id=%d and email=%s",$loc, $user_id, $user->user_email ));
-
-        $dateJoined = get_user_meta( $user_id, self::META_KEY, true );
-        if( $dateJoined == 'no' || $dateJoined == 'yes' ) {
-            $joinedMentorship = $dateJoined;
-        }
-        elseif ($dateJoined == '') {
+        
+        $joinedMentorship = 'no';
+        $strDateJoined = get_user_meta( $user_id, self::META_KEY, true );
+        $this->log->error_log("Date joined meta string='$strDateJoined'" );
+        $dateJoined = DateTime::createFromFormat("Y-m-d", $strDateJoined );
+        if( $dateJoined === false ) {
+            $this->log->error_log( DateTime::getLastErrors(), "Error getting date joined mentorship" );
             $joinedMentorship = 'no';
         }
         else {
-            $dateJoined = DateTime::createFromFormat("Y-m-d", $dateJoined );
-            if( $dateJoined === false ) {
-                $this->log->error_log( DateTime::getLastErrors(), "Error getting date joined mentorship");
-                $joinedMentorship = 'no';
-            }
-            else {
-                $joinedMentorship = 'yes';
-            }
+            $joinedMentorship = 'yes';
         }
+
         $this->log->error_log( $joinedMentorship, "$loc --> joined Mentorship" );
         $this->log->error_log( $dateJoined, "$loc --> date joined Mentorship" );
-
 
         $label = __( "Did member join the mentorship program?", CARE_TEXTDOMAIN );
         $checked = $joinedMentorship === "yes" ? "checked" : "";
         $templ = <<<EOT
             <div>
-            <label for="mentorship">%s</label>
+            <label for="pass_mentorship">%s</label>
             <input id="pass_mentorship" name="pass_mentorship" type="checkbox" value="%s" %s/>
             </div>
 EOT;

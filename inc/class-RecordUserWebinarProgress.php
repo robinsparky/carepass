@@ -27,6 +27,8 @@ class RecordUserWebinarProgress
 
     const TABLE_CLASS = 'webinar-status';
 
+    const DEFAULT_LOCATION = 'unknown';
+
     private $ajax_nonce = null;
     private $errobj = null;
     private $errcode = 0;
@@ -221,7 +223,7 @@ EOT;
                               , !empty($webinar["endDate"]) ? $webinar["endDate"] : $webinar["startDate"] 
                               , $st
                               , $watchedPct 
-                              , !empty($webinar['location']) ? $webinar['location'] : 'unknown');
+                              , !empty($webinar['location']) ? $webinar['location'] : self::DEFAULT_LOCATION );
                 $hidden .= sprintf("<input type=\"hidden\" name=\"webinarreports[]\" value=\"%s\"/> ", $val );
             }
         }
@@ -309,9 +311,9 @@ EOT;
                 $this->log->error_log( $edate->format( $format ), "End Date");
                 $webinar["endDate"] = $edate->format( $format );
 
-                $webinar['status']    = $arr[4];
+                $webinar['status']    = isset( $arr[4] ) ? $arr[4] : self::PENDING;
                 $webinar['watchedPct'] = (float)$arr[5];
-                $webinar['location'] = $arr[6];
+                $webinar['location'] = isset( $arr[6] ) ? $arr[6] : self::DEFAULT_LOCATION;
                 array_push( $webinars, $webinar );
             }
         }

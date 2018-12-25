@@ -208,7 +208,7 @@ EOT;
             $gotIt = false;
             foreach( $arrwebinar as $webinar) {
                 if( $defn['id'] === $webinar['id']) {
-                    $this->log->error_log( $webinar, 'Course from meta' );
+                    $this->log->error_log( $webinar, 'Webinar from meta' );
                     $row = sprintf( $templ
                                 , $webinar["id"]
                                 , $webinar["name"]
@@ -265,9 +265,20 @@ EOT;
 
         $user_id = (int) $currentuser->ID;
         $this->log->error_log( sprintf("%s: User id=%d and email=%s",$loc, $user_id, $currentuser->user_email ));
-    
-        $joinedMentorship = get_user_meta( $user_id, RecordUserMemberData::META_KEY, true );
-        if( $joinedMentorship !== 'yes') $joinedMentorship = 'no';
+        
+        $joinedMentorship = 'no';
+        $strDateJoined = get_user_meta( $user_id, RecordUserMemberData::META_KEY, true );
+        $this->log->error_log("Date joined meta string='$strDateJoined'" );
+        
+        $dateJoined = DateTime::createFromFormat("Y-m-d", $strDateJoined );
+        if( $dateJoined === false ) {
+            $this->log->error_log( DateTime::getLastErrors(), "Error getting date joined mentorship" );
+            $joinedMentorship = 'no';
+        }
+        else {
+            $joinedMentorship = 'yes';
+        }
+        
         $this->log->error_log( $joinedMentorship, "$loc --> joined Mentorship" );
         $label = __( "Did you join the mentorship program?", CARE_TEXTDOMAIN );
         $checked = $joinedMentorship === "yes" ? "checked" : "";

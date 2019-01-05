@@ -58,6 +58,12 @@ class ReportMemberProgress
 
         $this->log->error_log( $loc );
         
+        if( !is_user_logged_in() ) {
+            return '';
+        }
+        
+        if( !um_is_myprofile() ) return '';
+        
         $currentuser = wp_get_current_user();
         if ( ! ( $currentuser instanceof WP_User ) ) {
             return '<h1>ET call home!</h1>';
@@ -146,7 +152,7 @@ EOT;
 
         $this->log->error_log( $loc );
         
-        if( !is_user_logged_in() ){
+        if( !is_user_logged_in() ) {
             return '';
         }
         

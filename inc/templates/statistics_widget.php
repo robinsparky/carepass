@@ -4,14 +4,32 @@
  * view to save form data, remember to use some kind of identifying field in your form.
  */
 ?>
-<p>Reporting activity from:
-<b><?php $startDate = self::get_dashboard_widget_option(self::wid, 'starting_date');
+<p style="text-align:center; font-weight:bold;">
+<?php 
+    $strStartDate = self::get_dashboard_widget_option(self::wid, 'starting_date');
+    $strEndDate = self::get_dashboard_widget_option(self::wid, 'ending_date');
+    $currentDate = new DateTime();
     $totalInprogress = 0;
     $totalCompleted = 0;
-    $showDate = DateTime::createFromFormat("Y-m-d", $startDate);
-    echo $showDate->format("jS F Y"); 
+    $startDate = DateTime::createFromFormat( "Y-m-d", $strStartDate );
+    if( false === $startDate ) {
+        $startDate = DateTime::createFromFormat( "Y-m-d", "1970-01-01" );
+    }
+    $endDate = DateTime::createFromFormat( "Y-m-d", $strEndDate );
+    if( false === $endDate ) {
+        $endDate = $currentDate.add( new DateInterval("P12M") );
+    }
+    echo $startDate->format( "jS F Y" ) . " To " . $endDate->format( "jS F Y" ); 
 ?>
-</b> to the present.</p>
+</p>
+<div>
+    <p>Members participating in Mentorship: 
+    <?php
+        $stats = self::getMentorshipStatistics( $startDate, $endDate );
+        echo $stats 
+        ?>
+    </p>
+</div>
 <div>
     <table class="pass-statistics"><!DOCTYPE html>
     <thead>
@@ -21,7 +39,7 @@
     </thead>
     <tbody>
     <?php
-        $stats = self::getWebinarStatistics( $startDate );
+        $stats = self::getWebinarStatistics( $startDate, $endDate );
         foreach($stats as $webinarName => $stat) { 
             $totalInprogress += $stat[RecordUserWebinarProgress::PENDING];
             $totalCompleted  += $stat[RecordUserWebinarProgress::COMPLETED];
@@ -49,7 +67,7 @@
     <?php
         $totalInprogress = 0;
         $totalCompleted = 0;
-        $stats = self::getCourseStatistics( $startDate );
+        $stats = self::getCourseStatistics( $startDate, $endDate );
         foreach($stats as $webinarName => $stat) { 
             $totalInprogress += $stat[RecordUserCourseProgress::PENDING];
             $totalCompleted  += $stat[RecordUserCourseProgress::COMPLETED];
@@ -64,12 +82,4 @@
         <tr><td>Grand Totals</td><td><?php echo $totalInprogress?></td><td><?php echo $totalCompleted?></td></tr>
     </tfoot>
     </table>
-</div>
-<div>
-    <p><strong>Members participating in Mentorship: 
-    <?php
-        $stats = self::getMentorshipStatistics( $startDate );
-        echo $stats 
-        ?>
-    </strong></p>
 </div>

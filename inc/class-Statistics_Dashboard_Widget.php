@@ -23,6 +23,7 @@ class Statistics_Dashboard_Widget {
             self::wid,                                  //The  widget id
             array(                                      //Associative array of options & default values
                 'starting_date' => date("Y-m-d"),       //Defaults to today
+                'ending_date'   => date("Y-m-d")
             ),
             true                                        //Add only (will not update existing options)
         );
@@ -134,9 +135,11 @@ class Statistics_Dashboard_Widget {
 	 * Retrieve All PASS Webinars and meta data from db
 	 * @param $force Boolean to force fresh retrieval from database
 	 */
-	static public function getWebinarStatistics( $startDate ) {
+	static public function getWebinarStatistics( DateTime $start, DateTime $end ) {
         $loc = __CLASS__ . '::' . __FUNCTION__;
         error_log($loc);
+        error_log( print_r( $start, true ) );
+        error_log( print_r( $end, true ) );
         
         global $wpdb;
         $sql = "SELECT u.display_name as username
@@ -158,7 +161,6 @@ class Statistics_Dashboard_Widget {
         // error_log("Query results:");
         // error_log( print_r($result, true) ); 
 
-        $start = DateTime::createFromFormat('Y-m-d', $startDate );
         error_log("Each query result:");
         $ctr = 0;
         foreach( $result as $meta ) {
@@ -169,21 +171,36 @@ class Statistics_Dashboard_Widget {
 
             if( !is_array( $webinars ) ) continue;
 
-            foreach($webinars as $webinar) {
+            foreach( $webinars as $webinar ) {
                 error_log( "Webinar:" );
                 error_log( print_r( $webinar, true ) );
-                $strDate = @$webinar['startDate'] ? $webinar['startDate'] : date("Y-m-d");
-                $webinarDate = DateTime::createFromFormat('Y-m-d', $strDate );
-                if( false === $webinarDate ) {
-                    $webinarDate = DateTime::createFromFormat('d-m-Y', $strDate);
-                    if( false === $webinarDate ) {
+                $strStartDate = @$webinar['startDate'] ? $webinar['startDate'] : '1970-01-01';
+                $strEndDate = @$webinar['endDate'] ? $webinar['endDate'] : $strStartDate;
+                
+                $webinarStartDate = DateTime::createFromFormat('Y-m-d', $strStartDate );
+                if( false === $webinarStartDate ) {
+                    $webinarStartDate = DateTime::createFromFormat('d-m-Y', $strStartDate);
+                    if( false === $webinarStartDate ) {
                         error_log( DateTime::getLastErrors(), "Error processing start date" );
-                        $webinarDate = DateTime::createFromFormat($format, '1970-01-01');
+                        $webinarStartDate = DateTime::createFromFormat( 'Y-m-d', '1970-01-01');
                     }
                 }
-                $show = $webinarDate->format('Y-m-d');
-                error_log("Report date: $startDate; Webinar start: {$show}");
-                if( $webinarDate < $start ) continue;
+                
+                $webinarEndDate = DateTime::createFromFormat('Y-m-d', $strEndDate );
+                if( false === $webinarEndDate ) {
+                    $webinarEndDate = DateTime::createFromFormat('d-m-Y', $strEndDate);
+                    if( false === $webinarEndDate ) {
+                        error_log( DateTime::getLastErrors(), "Error processing end date" );
+                        $webinarEndDate = $webinarStartDate;
+                    }
+                }
+
+                $showStart = $webinarStartDate->format('Y-m-d');
+                $showEnd   = $webinarEndDate->format('Y-m-d');
+                error_log("Webinar start: {$showStart} end: {$showEnd}");
+                
+                if( $webinarStartDate < $start || $webinarStartDate > $end ) continue;
+                
                 $status = @$webinar['status'] ? $webinar['status'] : RecordUserWebinarProgress::PENDING;
                 switch( $status ) {
                     case RecordUserWebinarProgress::COMPLETED:
@@ -205,10 +222,12 @@ class Statistics_Dashboard_Widget {
 	 * Retrieve All PASS Courses and meta data from db
 	 * @param $force Boolean to force fresh retrieval from database
 	 */
-	static public function getCourseStatistics( $startDate ) {
+	static public function getCourseStatistics( DateTime $start, DateTime $end ) {
         $loc = __CLASS__ . '::' . __FUNCTION__;
         error_log($loc);
-        
+        error_log( print_r( $start, true ) );
+        error_log( print_r( $end, true ) );
+
         global $wpdb;
         $sql = "SELECT u.display_name as username
                         , m.meta_key
@@ -229,7 +248,6 @@ class Statistics_Dashboard_Widget {
         // error_log("Query results:");
         // error_log( print_r($result, true) ); 
 
-        $start = DateTime::createFromFormat('Y-m-d', $startDate );
         error_log("Each query result:");
         $ctr = 0;
         foreach( $result as $meta ) {
@@ -243,18 +261,32 @@ class Statistics_Dashboard_Widget {
             foreach($courses as $course) {
                 error_log( "Course:" );
                 error_log( print_r( $course, true ) );
-                $strDate = @$course['startDate'] ? $course['startDate'] : date("Y-m-d");
-                $courseDate = DateTime::createFromFormat('Y-m-d', $strDate );
-                if( false === $courseDate ) {
-                    $courseDate = DateTime::createFromFormat('d-m-Y', $strDate);
-                    if( false === $courseDate ) {
+                $strStartDate = @$course['startDate'] ? $course['startDate'] : '1970-01-01';
+                $strEndDate = @$course['endDate'] ? $course['endDate'] : $strStartDate;
+
+                $courseStartDate = DateTime::createFromFormat('Y-m-d', $strStartDate );
+                if( false === $courseStartDate ) {
+                    $courseStartDate = DateTime::createFromFormat('d-m-Y', $strStartDate);
+                    if( false === $courseStartDate ) {
                         error_log( DateTime::getLastErrors(), "Error processing start date" );
-                        $courseDate = DateTime::createFromFormat($format, '1970-01-01');
+                        $courseStartDate = DateTime::createFromFormat('Y-m-d', '1970-01-01');
                     }
                 }
-                $show = $courseDate->format('Y-m-d');
-                error_log("Report date: $startDate; Course start: {$show}");
-                if( $courseDate < $start ) continue;
+
+                $courseEndDate = DateTime::createFromFormat('Y-m-d', $strEndDate );
+                if( false === $courseEndDate ) {
+                    $courseEndDate = DateTime::createFromFormat('d-m-Y', $strEndDate);
+                    if( false === $webinarEndDate ) {
+                        error_log( DateTime::getLastErrors(), "Error processing end date" );
+                        $courseEndDate = $courseStartDate;
+                    }
+                }
+                $showStart = $courseStartDate->format('Y-m-d');
+                $showEnd   = $courseEndDate->format('Y-m-d');
+                error_log("Course start: {$showStart} end: {$showEnd}");
+                
+                if( $courseStartDate < $start || $courseStartDate > $end ) continue;
+
                 $status = @$course['status'] ? $course['status'] : RecordUserCourseProgress::PENDING;
                 switch( $status ) {
                     case RecordUserCourseProgress::COMPLETED:
@@ -272,10 +304,12 @@ class Statistics_Dashboard_Widget {
 		return $retval;
     }
     
-    public static function getMentorshipStatistics( $startDate ) {
+    public static function getMentorshipStatistics( DateTime $start, DateTime $end ) {
 
         $loc = __CLASS__ . '::' . __FUNCTION__;
         error_log( $loc );
+        error_log( print_r( $start, true ) );
+        error_log( print_r( $end, true ) );
 
         global $wpdb;
         $sql = "SELECT u.display_name as username
@@ -288,8 +322,6 @@ class Statistics_Dashboard_Widget {
         $query = $wpdb->prepare( $sql, RecordUserMemberData::META_KEY );
         $result = $wpdb->get_results( $query, ARRAY_A );
 
-        $start = DateTime::createFromFormat('Y-m-d', $startDate );
-        error_log( print_r( $start, true ) );
         $numInMentorship = 0;
 
         $ctr = 0;
@@ -314,16 +346,16 @@ class Statistics_Dashboard_Widget {
                 else {
                     $showStart = $dateJoined->format('Y-m-d');
                     $joinedMentorship = true;
-                    error_log("Report date: $startDate; Joined Mentorship on: {$showStart}");
+                    error_log("Joined Mentorship on: {$showStart}");
                 }
             }
             else {
                 $showStart = $dateJoined->format('Y-m-d');
                 $joinedMentorship = true;
-                error_log("Report date: $startDate; Joined Mentorship on: {$showStart}");
+                error_log("Joined Mentorship on: {$showStart}");
             }
 
-            if( $joinedMentorship && $dateJoined >= $start ) {
+            if( $joinedMentorship && $dateJoined >= $start && $dateJoined <= $end ) {
                 ++$numInMentorship;
             }
         }

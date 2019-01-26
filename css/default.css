@@ -144,6 +144,12 @@ table.front_logos tfoot td {
 	float: left;
 }
 
+img.aligncenter {
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+}
+
 /* Contact Forms */
 .wpcf7-form-control input[type="text"],
 .wpcf7-form-control  input[type="email"],

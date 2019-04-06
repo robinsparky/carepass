@@ -25,7 +25,7 @@
 				<h3><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h3>
 				
 				<video id="<?php the_ID(); ?>" data-name="<?php the_Title()?>" width="600"  
-					poster="http://passdevel.care4nurses.org/wp-content/uploads/Mix-Logo-3.jpg">
+					poster="<?php get_home_url(); ?>/wp-content/uploads/Mix-Logo-3.jpg">
 					<source src="<?php echo $videoUrl ?>" type="video/mp4">
 					Your browser does not support HTML5 video.
 				</video>

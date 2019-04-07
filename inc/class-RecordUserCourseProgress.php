@@ -241,8 +241,7 @@ EOT;
     public function progressProfileSave( $userId ) 
     {
         $loc = __CLASS__ . '::' . __FUNCTION__;
-        $this->log->error_log("$loc: _POST:");
-        $this->log->error_log( $_POST );
+        $this->log->error_log( $_POST, "$loc: _POST:" );
     
         if ( !current_user_can('edit_user', $userId)) {
             return;
@@ -266,7 +265,8 @@ EOT;
         }
         $this->log->error_log( $coursereports, "Length of course reports=" . count( $coursereports ) );
 
-        $this->storeCourseProgress( $userId, $coursereports );
+        $mess = $this->storeCourseProgress( $userId, $coursereports );
+        $this->log->error_log( $mess, $loc . " Final Message" );
 
         return;
     }
@@ -285,7 +285,7 @@ EOT;
         foreach( $statusreports as $report ) {
             $arr = explode( "|", $report );
             if( !in_array( $arr[0], $tracker ) ) {
-                $this->log->error_log( $report );
+                $this->log->error_log( $report, "Report" );
                 array_push( $tracker, $arr[0] );
                 $course = array();
                 $course['id']        = $arr[0];

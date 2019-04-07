@@ -171,7 +171,8 @@ class WatchWebinarProgress
             }
         }
 
-        $this->log( $mess, "Final Message" );
+        $this->log->error_log( $mess, $loc . " Final Message" );
+
         $response = array();
         $response["message"] = $mess;
         $response["returnData"] = $webinars;

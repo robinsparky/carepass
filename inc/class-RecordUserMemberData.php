@@ -151,8 +151,7 @@ EOT;
     public function memberDataProfileSave( $userId ) 
     {
         $loc = __CLASS__ . '::' . __FUNCTION__;
-        $this->log->error_log("$loc: _POST:");
-        $this->log->error_log( $_POST );
+        $this->log->error_log( $_POST, "$loc: _POST:" );
     
         if ( !current_user_can('edit_user', $userId)) {
             return;

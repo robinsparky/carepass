@@ -4,6 +4,7 @@
 	<meta charset="<?php bloginfo('charset'); ?>">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="https://use.typekit.net/otd8wni.css">
 	<?php 
 	$appointment_options=theme_setup_data(); 
 	$header_setting = wp_parse_args(  get_option( 'appointment_options', array() ), $appointment_options);

@@ -187,17 +187,140 @@ table.picker__table {
 
 /*Requested fonts*/
 p, li, .management-report {
-	font-family: 'Helvetica,Verdana,Arial,sans-serif' !important;
+	font-family: Arial, Helvetica, sans-serif !important;
 	/* font-size: 16px;
 	font-weight: 400; */
 }
  
 h1, .h1, h2, .h2, h3, .h3, h4, .h4, h5, .h5, h6, .h6 {
-	font-family: 'Helvetica,Verdana,Arial,sans-serif' !important;
+	font-family: itc-avant-garde-gothic-pro, sans-serif !important;
+	font-style: normal;
+	font-weight: 500;
+}
+
+
+/* CODE Brought From Custom CSS of the Theme Customizer */
+.footer-section { 
+	font-size:11px;
+	height: 40px;
+}
+
+.footer-widget-title { font-size: 2em; } 
+
+.footer-widget-section .textwidget { line-height: 26px; font-size: 1.6em; }
+
+.footer-widget-column { line-height: 20px; font-size: 1em; width: 100%; }
+
+.footer-widget-section .textwidget { line-height: 20px; }
+
+.footer-widget-column { line-height: 20px; }
+
+
+
+/* CODE ADDED BY VINCE CICCHINE */
+
+
+h2, .h2 {
+	color: #e31837 !important;
+	margin-bottom: 8px !important;
+}
+
+h3, .h3 {
+	font-size: 24px !important;
+    color: #00a4e4 !important;
+	margin-top: 22px !important;
+	margin-bottom: 3px !important;
+} 
+
+h4, .h4, h5, .h5 {
+	color: #00a4e4;
+	margin-top: 22px;
+	margin-bottom: 3px;
+}
+
+p { 
+	font-family: itc-avant-garde-gothic-pro, sans-serif !important; 
+	font-style: normal;
+	font-weight: 300;
+	margin-bottom: 9px;
+	line-height: 1.4em;
+}
+
+ul li, ol li {
+	font-family: itc-avant-garde-gothic-pro, sans-serif !important; 
+	font-style: normal;
+	font-weight: 300;    
+	padding: 3px 0;
+	line-height: 1.4em;
 }
 
 .navbar-default .navbar-nav > li > a {
-	font-family: 'Helvetica,Verdana,Arial,sans-serif' !important;
-	/* font-size: 16px;
-	font-weight: 400; */
+	font-family: itc-avant-garde-gothic-pro, sans-serif;
+	font-style: normal;
+	font-weight: 500;	
+	font-size: 14px;
 }
+
+.navbar-right {
+	float: left !important;
+	margin-top: 10px;
+	margin-left: -1.5%;
+}
+
+.navbar {
+  	padding-top: 22px;
+}
+
+.page-builder {
+  	margin: 0px;
+  	padding: 36px 0 0;
+}
+
+.page-title-section .overlay {
+  	padding: 20px 0 22px;
+}
+
+.col-md-8 {
+	padding-right: 2%;
+}
+
+hr.blog {
+	border: 3px solid;
+	border-radius: 5px;
+	color: #82c8ef;
+	margin-bottom: 40px;
+}
+
+.margin-bottom-30{
+	margin-bottom: 30px;
+}
+
+strong {
+	font-family: itc-avant-garde-gothic-pro, sans-serif;
+	font-style: normal;
+	font-weight: 500;
+	color: #00a4e4;
+}
+
+.contact {
+	border: 1px solid;
+	border-color: #00a4e4;
+	padding: 12px;
+	background-color: #DAF4FF;
+	margin-bottom: 40px;
+}
+
+
+/*  BUTTONS */
+.is-style-squared .wp-block-button__link {
+	font-family: itc-avant-garde-gothic-pro, sans-serif;
+	font-style: normal;
+	font-weight: 500;
+	font-size: 14px;
+	border-radius: 6px;
+	padding: 4px 10px;
+}
+
+
+
+

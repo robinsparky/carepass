@@ -12,9 +12,14 @@
 	<link rel="shortcut icon" href="<?php  echo $header_setting['upload_image_favicon']; ?>" /> 
 	<?php } ?>
 	<link rel="pingback" href="<?php bloginfo( 'pingback_url' ); ?>">
+	<?php if( is_front_page() || is_home() ) {
+		header( 'Cache-Control: no-store, no-cache, must-revalidate, max-age=0' );
+		header( 'Expires: Wed, 11 Jan 1984 05:00:00 GMT' );
+	} ?>
+
 	<?php wp_head(); ?>
 	</head>
-	<body <?php body_class(); ?> >
+<body <?php body_class(); ?> >
 
 <?php if ( get_header_image() != '') {?>
 <div class="header-img">

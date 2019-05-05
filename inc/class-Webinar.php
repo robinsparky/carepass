@@ -151,7 +151,7 @@ class Webinar extends BaseCustomMediaPostType {
 					, 'capability_type' => 'post'
 					, 'hierarchical' => false
 					, 'rewrite' => array( 'slug' => self::CUSTOM_POST_TYPE )
-					, 'supports' => array( 'title', 'editor', 'thumbnail', 'excerpt', 'revisions' ) 
+					, 'supports' => array( 'title', 'editor', 'author', 'thumbnail', 'excerpt', 'revisions' ) 
 					, 'public' => true );
 		register_post_type( self::CUSTOM_POST_TYPE, $args );
 	}
@@ -205,6 +205,7 @@ class Webinar extends BaseCustomMediaPostType {
 		$newColumns['cb'] = $columns['cb'];
 		$newColumns['title'] = __('Title', CARE_TEXTDOMAIN );
 		$newColumns['taxonomy-carewebinartax'] = __('Category', CARE_TEXTDOMAIN );
+		$newColumns['author'] = __('Author', CARE_TEXTDOMAIN);
 		$newColumns['webinar_video'] = __( 'Video', CARE_TEXTDOMAIN  );
 		$newColumns['date'] = __('Date', CARE_TEXTDOMAIN );
 		return $newColumns;

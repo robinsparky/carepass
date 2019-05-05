@@ -233,6 +233,7 @@ class Course extends BaseCustomMediaPostType {
 		$newColumns['course_duration'] = __('Duration', CARE_TEXTDOMAIN );
 		$newColumns['course_curriculum'] = __( 'Curriculum', CARE_TEXTDOMAIN );
 		$newColumns['course_video'] = __( 'Video', CARE_TEXTDOMAIN  );
+		$newColumns['author'] = __('Author', CARE_TEXTDOMAIN);
 		$newColumns['date'] = __('Date', CARE_TEXTDOMAIN );
 		return $newColumns;
 	}

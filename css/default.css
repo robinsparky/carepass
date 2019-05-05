@@ -200,19 +200,11 @@ h1, .h1, h2, .h2, h3, .h3, h4, .h4, h5, .h5, h6, .h6 {
 
 
 /* CODE Brought From Custom CSS of the Theme Customizer */
-.footer-section { 
-	font-size:11px;
-	height: 40px;
-}
-
+.footer-section { }
 .footer-widget-title { font-size: 2em; } 
-
 .footer-widget-section .textwidget { line-height: 26px; font-size: 1.6em; }
-
 .footer-widget-column { line-height: 20px; font-size: 1em; width: 100%; }
-
 .footer-widget-section .textwidget { line-height: 20px; }
-
 .footer-widget-column { line-height: 20px; }
 
 
@@ -224,6 +216,12 @@ h2, .h2 {
 	color: #e31837 !important;
 	margin-bottom: 8px !important;
 }
+
+/* ---- Added by Robin May 5, 2019 ----*/
+h2 a, .h2 a {
+    color:  #e31837 !important; 
+}
+/* ------------------------------------*/
 
 h3, .h3 {
 	font-size: 24px !important;
@@ -259,6 +257,7 @@ ul li, ol li {
 	font-style: normal;
 	font-weight: 500;	
 	font-size: 14px;
+	padding: 6px 10px 6px 10px;
 }
 
 .navbar-right {
@@ -303,11 +302,15 @@ strong {
 }
 
 .contact {
-	border: 1px solid;
-	border-color: #00a4e4;
+	border: 1px solid #00a4e4;
 	padding: 12px;
 	background-color: #DAF4FF;
 	margin-bottom: 40px;
+}
+
+/* ADDING SPACING */
+.line-spacing {
+	line-height: 30px !important;
 }
 
 
@@ -321,6 +324,50 @@ strong {
 	padding: 4px 10px;
 }
 
+.footer-copyright-section{
+	background-color: #DAF4FF;
+}
 
+.footer-copyright {
+    font-size: 11px;
+	padding: 20px 0;
+}
 
+/* SIDEBAR */
+
+.sidebar-widget {
+    text-align: center;
+	margin-bottom: 4px;
+}
+
+.sidebar-widget-title {
+    font-size: 16px !important;
+	text-align: center !important;
+	margin-right: 3%;
+	margin-bottom: 4px;
+	margin-left: 3%;
+}
+
+.sidebar-section-right {
+    background-color: #F0F0F0;
+    border: 2px solid #00a4e4;
+    margin-bottom: 80px;
+    margin-left: 10%;
+    padding: 30px 20px 30px 20px;
+	border-radius: 3px;
+}
+
+/* FORUMS */
+
+#bbpress-forums li {
+    font-size: 18px;
+}
+
+p.bbp-breadcrumb, bbp-breadcrumb-home {
+    font-size: 22px !important;
+}
+
+#bbpress-forums .bbp-forum-info .bbp-forum-content, #bbpress-forums p.bbp-topic-meta {
+    font-size: 13px;
+}
 

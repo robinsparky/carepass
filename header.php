@@ -1,10 +1,22 @@
 <!DOCTYPE html>
 <html <?php language_attributes(); ?> >
 <head>
+	<!-- Global site tag (gtag.js) - Google Analytics -->
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-157271171-2"></script>
+	<script>
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+
+	gtag('config', 'UA-157271171-2');
+	</script>
+
+	
 	<meta charset="<?php bloginfo('charset'); ?>">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="https://use.typekit.net/otd8wni.css">
+
 	<?php 
 	$appointment_options=theme_setup_data(); 
 	$header_setting = wp_parse_args(  get_option( 'appointment_options', array() ), $appointment_options);

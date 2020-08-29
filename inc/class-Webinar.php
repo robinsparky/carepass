@@ -150,6 +150,7 @@ class Webinar extends BaseCustomMediaPostType {
 					, 'query_var' => true
 					, 'capability_type' => 'post'
 					, 'hierarchical' => false
+					, 'show_in_rest' => true //causes Gutenberg editor to be used
 					, 'rewrite' => array( 'slug' => self::CUSTOM_POST_TYPE )
 					, 'supports' => array( 'title', 'editor', 'author', 'thumbnail', 'excerpt', 'revisions' ) 
 					, 'public' => true );
@@ -233,8 +234,10 @@ class Webinar extends BaseCustomMediaPostType {
 		Meta Boxes
 	================================================
 	*/
-	public function metaBoxes() {
+	public function metaBoxes( $post_type ) {
 					
+		if( $post_type !== self::CUSTOM_POST_TYPE ) return;
+		
 		/* Webinar Video Meta Box */
 		add_meta_box( $this->mediaMetaBoxId //id
 					, 'Video' //Title

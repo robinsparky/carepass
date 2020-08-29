@@ -211,7 +211,8 @@ class Course extends BaseCustomMediaPostType {
 					 , 'publicly_queryable' => true
 					 , 'query_var' => true
 					 , 'capability_type' => 'post'
-					 , 'hierarchical' => false
+					 , 'hierarchical' => false					 
+					 , 'show_in_rest' => true //causes Gutenberg editor to be used
 					 , 'rewrite' => array( 'slug' => self::CUSTOM_POST_TYPE )
 					 //, 'supports' => array( 'title', 'editor', 'author', 'thumbnail', 'comments', 'excerpt', 'revisions', 'custom-fields' ) 
 					 , 'supports' => array( 'title', 'editor', 'author', 'thumbnail', 'excerpt', 'revisions' ) 
@@ -350,9 +351,11 @@ class Course extends BaseCustomMediaPostType {
 		Meta Boxes
 	================================================
 	*/
-	public function metaBoxes() {
+	public function metaBoxes( $post_type ) {
         $loc = __CLASS__ . '::' . __FUNCTION__;
 		$this->log->error_log( $loc );
+		
+		if( $post_type !== self::CUSTOM_POST_TYPE ) return;
 		
 		/* Curriculum meta box */
 		add_meta_box( 'care_course_curriculum_meta_box' //id

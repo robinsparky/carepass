@@ -150,6 +150,15 @@ img.aligncenter {
 	margin-right: auto;
 }
 
+/* Fix alignwide styling in the contacts */
+.wp-block-media-text.alignwide.contact > figure.wp-block-media-text__media > img {
+	height:50%;
+}
+
+.wp-block-media-text.alignwide.contact > div.wp-block-media-text__content > p > a > img {
+	height:50%;
+}
+
 /* Contact Forms */
 .wpcf7-form-control input[type="text"],
 .wpcf7-form-control  input[type="email"],
